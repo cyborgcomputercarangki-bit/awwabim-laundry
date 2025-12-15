@@ -3,109 +3,278 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Driver Awwabim Laundry</title>
+<title>Awwabim Laundry - Admin</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
 
 <style>
-body{font-family:Segoe UI;background:#dfe6e9}
-.container{max-width:800px;margin:auto;background:#fff;padding:15px;border-radius:10px}
-input,button{width:100%;padding:10px;margin-bottom:10px}
-button{background:#27ae60;color:#fff;border:none;font-weight:bold}
-table{width:100%;border-collapse:collapse}
+body{
+ margin:0;
+ font-family:Segoe UI,Arial;
+ background:linear-gradient(135deg,#fceabb,#f8b500);
+}
+.container{
+ max-width:1000px;
+ margin:auto;
+ background:#fff;
+ padding:15px;
+ border-radius:12px;
+ box-shadow:0 6px 15px rgba(0,0,0,.2);
+}
+h1{margin:0;color:#2c3e50}
+
+/* LOGIN BAR */
+#loginBar,#logoutBar{
+ padding:10px;
+ background:#fffbe6;
+ border-bottom:1px solid #ddd;
+}
+#logoutBar{display:none;background:#eafaf1}
+
+/* NAV */
+nav{display:flex;gap:10px;margin:15px 0}
+nav button{
+ flex:1;padding:10px;border:none;border-radius:6px;
+ font-weight:bold;background:#ecf0f1
+}
+nav button.active{background:#e67e22;color:#fff}
+
+section{display:none}
+section.active{display:block}
+
+input{
+ width:100%;padding:12px;margin-bottom:10px;
+ border-radius:6px;border:1px solid #ccc
+}
+.btn{
+ padding:12px;border:none;border-radius:6px;
+ font-weight:bold;color:#fff;cursor:pointer
+}
+.btn-jemput{background:#27ae60}
+.btn-antar{background:#3498db}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;margin-top:10px}
 th,td{padding:8px;border-bottom:1px solid #ddd;text-align:center}
-th{background:#0984e3;color:#fff}
+th{background:#2c3e50;color:#fff}
+
+/* STATUS */
+.status{
+ padding:5px 10px;border-radius:20px;
+ font-size:12px;font-weight:bold;color:#fff
+}
+.MENUNGGU_DRIVER{background:#f39c12}
+.PROSES_CUCI{background:#e74c3c}
+.PROSES_ANTAR{background:#3498db}
+.SELESAI{background:#27ae60}
+
+/* TOAST */
+.toast{
+ position:fixed;bottom:20px;right:20px;
+ background:#333;color:#fff;
+ padding:15px;border-radius:8px;
+ display:none;z-index:9999
+}
 </style>
 </head>
 
 <body>
+
+<!-- LOGIN ADMIN -->
+<div id="loginBar">
+ <input id="namaAdmin" placeholder="Nama admin" style="width:70%">
+ <button onclick="loginAdmin()">LOGIN</button>
+</div>
+
+<div id="logoutBar">
+ Login sebagai: <b id="adminName"></b>
+ <button onclick="logoutAdmin()" style="float:right">LOGOUT</button>
+</div>
+
 <div class="container">
+<h1>🧺 Awwabim Laundry – ADMIN</h1>
 
-<h2>🚚 DRIVER AWWABIM LAUNDRY</h2>
+<nav>
+ <button class="active" onclick="openTab('input',this)">Order Baru</button>
+ <button onclick="openTab('aktif',this)">Pesanan Aktif</button>
+ <button onclick="openTab('history',this)">History</button>
+</nav>
 
-<div id="login">
- <input id="namaDriver" placeholder="Nama driver">
- <button onclick="login()">MASUK</button>
+<!-- ORDER BARU -->
+<section id="input" class="active">
+ <input id="nama" placeholder="Nama Pelanggan">
+ <input id="wa" placeholder="WhatsApp (08xxx)">
+ <button class="btn btn-jemput" onclick="submitPesanan('JEMPUT')">🧺 JEMPUT</button>
+ <br><br>
+ <button class="btn btn-antar" onclick="submitPesanan('ANTAR')">🚚 ANTAR</button>
+</section>
+
+<!-- AKTIF -->
+<section id="aktif">
+<table>
+<thead>
+<tr>
+ <th>Waktu</th>
+ <th>Pelanggan</th>
+ <th>Layanan</th>
+ <th>Driver</th>
+ <th>Status</th>
+ <th>Aksi</th>
+</tr>
+</thead>
+<tbody id="listAktif"></tbody>
+</table>
+</section>
+
+<!-- HISTORY -->
+<section id="history">
+<table>
+<thead>
+<tr>
+ <th>Waktu</th>
+ <th>Pelanggan</th>
+ <th>Layanan</th>
+ <th>Driver</th>
+ <th>Status</th>
+</tr>
+</thead>
+<tbody id="listHistory"></tbody>
+</table>
+</section>
+
 </div>
 
-<div id="app" style="display:none">
- <p>Login sebagai: <b id="driverName"></b></p>
- <button onclick="logout()" style="background:#e74c3c">LOGOUT</button>
-
- <table>
- <thead>
- <tr>
-  <th>Pelanggan</th>
-  <th>Layanan</th>
-  <th>Aksi</th>
- </tr>
- </thead>
- <tbody id="list"></tbody>
- </table>
-</div>
-
-</div>
+<div id="toast" class="toast"></div>
 
 <script>
+/* ===== FIREBASE ===== */
 firebase.initializeApp({
  apiKey:"AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
  databaseURL:"https://awwabim-laundry-default-rtdb.firebaseio.com"
 });
+const db = firebase.database();
+const Pesanan = db.ref("Pesanan");
+const Notif = db.ref("Notifikasi");
 
-const Pesanan=firebase.database().ref("Pesanan");
-const Notif=firebase.database().ref("Notifikasi");
-
-let driver=localStorage.getItem("driver");
-
-function login(){
- const n=namaDriver.value.trim();
+/* ===== LOGIN ===== */
+const admin = localStorage.getItem("admin");
+if(admin){
+ loginBar.style.display="none";
+ logoutBar.style.display="block";
+ adminName.innerText=admin;
+}
+function loginAdmin(){
+ const n=namaAdmin.value.trim();
  if(!n) return alert("Nama wajib diisi");
- localStorage.setItem("driver",n);
+ localStorage.setItem("admin",n);
+ loginBar.style.display="none";
+ logoutBar.style.display="block";
+ adminName.innerText=n;
+}
+function logoutAdmin(){
+ localStorage.removeItem("admin");
  location.reload();
 }
 
-function logout(){
- localStorage.removeItem("driver");
- location.reload();
+/* ===== UI ===== */
+function openTab(id,btn){
+ document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+ btn.classList.add("active");
+}
+function toast(msg){
+ const t=document.getElementById("toast");
+ t.innerText=msg;
+ t.style.display="block";
+ setTimeout(()=>t.style.display="none",3000);
 }
 
-if(driver){
- login.style.display="none";
- app.style.display="block";
- driverName.innerText=driver;
+/* ===== SUBMIT ORDER ===== */
+function submitPesanan(layanan){
+ const n=nama.value.trim();
+ let w=wa.value.replace(/\D/g,'');
+ if(!n||!w) return toast("Lengkapi data");
+ if(w.startsWith("0")) w="62"+w.slice(1);
+
+ const ref=Pesanan.push();
+ ref.set({
+  id:ref.key,
+  namaPelanggan:n,
+  kontakWa:w,
+  tipeLayanan:layanan,
+  status:"MENUNGGU_DRIVER",
+  driver:null,
+  timestamp:Date.now()
+ });
+
+ toast("Order masuk, menunggu driver");
+ nama.value=""; wa.value="";
 }
 
+/* ===== STATUS + NOTIF KE DRIVER ===== */
+function nextStatus(id,st,driver,nama){
+ let ns="",msg="";
+ if(st==="MENUNGGU_DRIVER"){
+  return toast("Menunggu driver ambil");
+ }
+ if(st==="PROSES_CUCI"){
+  ns="PROSES_ANTAR";
+  msg="🚚 Pesanan siap diantar";
+ }else{
+  ns="SELESAI";
+  msg="✅ Pesanan selesai";
+ }
+
+ Pesanan.child(id).update({status:ns});
+
+ if(driver){
+  Notif.push({
+   ke:driver,
+   pesan:`${msg} (${nama})`,
+   waktu:Date.now(),
+   dibaca:false
+  });
+ }
+}
+
+/* ===== LIST ===== */
 Pesanan.on("value",snap=>{
- list.innerHTML="";
+ listAktif.innerHTML="";
+ listHistory.innerHTML="";
  snap.forEach(c=>{
   const d=c.val();
-  if(d.status==="MENUNGGU_DRIVER"){
-   list.innerHTML+=`
+  const jam=new Date(d.timestamp).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"});
+  if(d.status==="SELESAI"){
+   listHistory.innerHTML+=`
    <tr>
+    <td>${jam}</td>
     <td>${d.namaPelanggan}</td>
     <td>${d.tipeLayanan}</td>
+    <td>${d.driver||"-"}</td>
+    <td><span class="status SELESAI">SELESAI</span></td>
+   </tr>`;
+  }else{
+   listAktif.innerHTML+=`
+   <tr>
+    <td>${jam}</td>
+    <td>${d.namaPelanggan}</td>
+    <td>${d.tipeLayanan}</td>
+    <td>${d.driver||"-"}</td>
+    <td><span class="status ${d.status}">${d.status}</span></td>
     <td>
-     <button onclick="ambil('${c.key}')">AMBIL</button>
+     <button onclick="nextStatus(
+      '${c.key}',
+      '${d.status}',
+      '${d.driver}',
+      '${d.namaPelanggan}'
+     )">Next</button>
     </td>
    </tr>`;
   }
  });
 });
-
-function ambil(id){
- Pesanan.child(id).update({
-  status:"PROSES_CUCI",
-  driver:driver
- });
-
- Notif.push({
-  ke:"ADMIN",
-  pesan:`Driver ${driver} mengambil pesanan`,
-  waktu:Date.now(),
-  dibaca:false
- });
-}
 </script>
 </body>
 </html>
