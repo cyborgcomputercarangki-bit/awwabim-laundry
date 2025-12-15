@@ -1,220 +1,893 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Awwabim Laundry - Admin</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Awwabim Laundry - RTDB Mode</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script> 
 
-<!-- FIREBASE v8 (STABIL UNTUK WEBVIEW) -->
-<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+    <style>
+        /* ========================================================= */
+        /* CSS DASAR DAN LAYOUT (Skema Warna & Gradasi Latar Belakang) */
+        /* ========================================================= */
+        :root {
+            --color-primary: #2c3e50;  /* Navy Blue - Warna Utama */
+            --color-accent: #e67e22;   /* Orange Cerah - Warna Aksen */
+            --color-success: #27ae60;  /* Hijau */
+            --color-info: #3498db;     /* Biru */
+            --color-warning: #f39c12;  /* Kuning */
+            --color-danger: #e74c3c;   /* Merah */
+        }
 
-<style>
-body{
-    margin:0;
-    font-family:Segoe UI,Arial;
-    background:linear-gradient(135deg,#fceabb,#f8b500);
-}
-.container{
-    max-width:1000px;
-    margin:auto;
-    background:#fff;
-    padding:15px;
-    border-radius:12px;
-    box-shadow:0 6px 15px rgba(0,0,0,.2);
-}
-h1{margin:0;color:#2c3e50}
-nav{
-    display:flex;
-    gap:10px;
-    margin:15px 0;
-}
-nav button{
-    flex:1;
-    padding:10px;
-    border:none;
-    border-radius:6px;
-    font-weight:bold;
-    background:#ecf0f1;
-}
-nav button.active{
-    background:#e67e22;
-    color:#fff;
-}
-section{display:none}
-section.active{display:block}
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px 10px;
+            /* Latar Belakang Gradasi Oranye/Emas */
+            background: linear-gradient(135deg, #fceabb 0%, #f8b500 100%); 
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white; 
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2); 
+        }
+        header {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        
+        .brand-header {
+            display: flex;
+            align-items: center;
+            justify-content: center; 
+            margin-bottom: 10px;
+        }
+        .brand-header img {
+            height: 40px; 
+            margin-right: 10px;
+            max-width: 100%;
+        }
+        .brand-header h1 {
+            color: var(--color-primary); 
+            font-size: 1.5em;
+            margin: 0;
+            text-align: left;
+        }
 
-input{
-    width:100%;
-    padding:12px;
-    margin-bottom:10px;
-    border-radius:6px;
-    border:1px solid #ccc;
-}
-.btn{
-    padding:12px;
-    border:none;
-    border-radius:6px;
-    font-weight:bold;
-    color:#fff;
-    cursor:pointer;
-}
-.btn-jemput{background:#27ae60}
-.btn-antar{background:#3498db}
+        h2 {
+            color: var(--color-primary);
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 8px;
+            margin-top: 15px;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
 
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:10px;
-}
-th,td{
-    padding:8px;
-    border-bottom:1px solid #ddd;
-    text-align:center;
-}
-th{background:#2c3e50;color:#fff}
+        .main-nav {
+            display: flex;
+            gap: 2px;
+            margin-top: 10px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        .nav-item {
+            padding: 10px 15px;
+            text-decoration: none;
+            color: #555;
+            font-weight: bold;
+            border-radius: 6px 6px 0 0;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+            font-size: 0.9em;
+        }
+        .nav-item:hover {
+            background-color: #f0f0f0;
+        }
+        .nav-item.active {
+            color: var(--color-accent);
+            border-bottom: 3px solid var(--color-accent);
+            background-color: #f7f9f9;
+        }
+        .separator {
+            border: 0;
+            height: 1px;
+            background-color: #eee;
+            margin: 0 0 15px 0;
+        }
+        .tab-content {
+            display: none;
+            padding-top: 5px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
+            background: #fcfcfc;
+            border: 1px solid #e0e0e0; 
+            border-radius: 8px;
+        }
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+            color: var(--color-primary);
+        }
+        input[type="text"], input[type="tel"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc; 
+            border-radius: 6px;
+            box-sizing: border-box;
+            background-color: #ffffff; 
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input[type="text"]:focus, input[type="tel"]:focus {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 8px rgba(230, 126, 34, 0.4);
+            outline: none;
+        }
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 5px;
+        }
 
-.status{
-    padding:5px 10px;
-    border-radius:20px;
-    font-size:12px;
-    font-weight:bold;
-}
-.MENUNGGU_DRIVER{background:#f39c12}
-.PROSES_CUCI{background:#e74c3c;color:#fff}
-.PROSES_ANTAR{background:#3498db;color:#fff}
-.SELESAI{background:#27ae60;color:#fff}
+        .btn {
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.1s;
+            width: 100%;
+            color: white; 
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .btn-jemput {
+            background-color: var(--color-success); 
+        }
+        .btn-jemput:hover {
+            background-color: #2ecc71;
+        }
+        .btn-antar {
+            background-color: var(--color-info); 
+        }
+        .btn-antar:hover {
+            background-color: #2980b9;
+        }
 
-.toast{
-    position:fixed;
-    bottom:20px;
-    right:20px;
-    background:#333;
-    color:#fff;
-    padding:15px;
-    border-radius:8px;
-    display:none;
-    z-index:9999;
-}
-</style>
+        /* TABEL PESANAN */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            min-width: 600px; 
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        th, td {
+            padding: 10px 8px;
+            font-size: 0.9em;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: var(--color-primary);
+            color: white;
+            white-space: nowrap;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f8f8;
+        }
+        tr:hover {
+            background-color: #f7f9f9;
+        }
+        
+        /* STATUS BADGE */
+        .status-badge {
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .status-menunggu { background-color: var(--color-warning); color: #333; } 
+        .status-proses { background-color: var(--color-danger); color: white; } 
+        .status-selesai { background-color: var(--color-success); color: white; }
+        
+        /* Tombol Aksi di Tabel */
+        .action-group {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        td button {
+            padding: 6px 8px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            font-size: 0.8em;
+            white-space: nowrap;
+        }
+        .btn-next-status {
+            background-color: var(--color-primary);
+        }
+        .btn-next-status:hover {
+            background-color: #34495e;
+        }
+        .btn-wa {
+            background-color: #25D366; /* WhatsApp Green */
+        }
+        .btn-wa:hover {
+            background-color: #1FAF59;
+        }
+        td button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        /* CSS KHUSUS UNTUK AUTOCMPLETE */
+        .autocomplete-container {
+            position: relative;
+        }
+        #suggestions {
+            position: absolute;
+            z-index: 10;
+            border: 1px solid #ccc;
+            max-height: 150px;
+            overflow-y: auto;
+            width: 100%;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9em;
+        }
+
+        /* ========================================================= */
+        /* MODAL BOX CUSTOM CSS (Pengganti Alert) */
+        /* ========================================================= */
+        .modal-backdrop {
+            display: none; 
+            position: fixed;
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4); 
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; 
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; 
+            max-width: 400px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            text-align: center;
+            animation: zoomIn 0.3s;
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+
+        .modal-content p {
+            font-size: 1em;
+            line-height: 1.4;
+            color: #333;
+            margin-bottom: 20px;
+            white-space: pre-line; 
+        }
+
+        .btn-primary {
+            background-color: var(--color-accent); 
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0}
+            to {opacity: 1}
+        }
+
+        @keyframes zoomIn {
+            from {transform: scale(0.9); opacity: 0}
+            to {transform: scale(1); opacity: 1}
+        }
+        
+        /* MEDIA QUERY: LAYAR BESAR */
+        @media (min-width: 768px) {
+            .container {
+                padding: 30px;
+            }
+            .brand-header {
+                justify-content: flex-start;
+            }
+            .brand-header img {
+                height: 50px;
+            }
+            .brand-header h1 {
+                font-size: 1.8em;
+            }
+            .btn-group {
+                flex-direction: row; 
+            }
+            .btn {
+                width: auto;
+            }
+            .table-wrapper {
+                overflow-x: hidden;
+            }
+            table {
+                min-width: unset;
+            }
+        }
+    </style>
 </head>
-
 <body>
-<div class="container">
-    <h1>🧺 Awwabim Laundry – ADMIN</h1>
+    <div class="container">
+        <header>
+            <div class="brand-header">
+                <img src="https://iili.io/fa8IvdG.jpg" alt="Logo Awwabim Laundry">
+                <h1>Awwabim Laundry</h1>
+            </div>
+            
+            <nav class="main-nav">
+                <a href="#" class="nav-item active" data-tab="input-pesanan">💰 Order Baru</a>
+                <a href="#" class="nav-item" data-tab="pesanan-aktif">⏳ Pesanan Aktif</a>
+                <a href="#" class="nav-item" data-tab="history">📄 History & Selesai</a>
+            </nav>
+        </header>
 
-    <nav>
-        <button class="active" onclick="openTab('input')">Order Baru</button>
-        <button onclick="openTab('aktif')">Pesanan Aktif</button>
-    </nav>
+        <hr class="separator">
 
-    <!-- INPUT -->
-    <section id="input" class="active">
-        <input id="nama" placeholder="Nama Pelanggan">
-        <input id="wa" placeholder="WhatsApp (08xxx)">
-        <button class="btn btn-jemput" onclick="submitPesanan('Jemput')">🧺 JEMPUT</button>
-        <br><br>
-        <button class="btn btn-antar" onclick="submitPesanan('Antar')">🚚 ANTAR</button>
-    </section>
+        <div id="input-pesanan" class="tab-content active">
+            <h2>1. Input Pesanan Baru</h2>
+            <form id="form-pesanan">
+                <div class="autocomplete-container">
+                    <label for="nama-pelanggan">Nama Pelanggan</label>
+                    <input type="text" id="nama-pelanggan" required 
+                           placeholder="Mulai ketik nama pelanggan...">
+                    <div id="suggestions"></div>
+                </div>
+                
+                <div>
+                    <label for="kontak-wa">Kontak WhatsApp</label>
+                    <input type="tel" id="kontak-wa" required 
+                           placeholder="Contoh: 08123456789 atau 628123456789">
+                    <small>Nomor akan otomatis dinormalisasi ke format 62xxx.</small>
+                </div>
+                
+                <label>Pilih Tipe Layanan</label>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-jemput" data-layanan="Jemput">
+                        🧺 JEMPUT
+                    </button>
+                    <button type="submit" class="btn btn-antar" data-layanan="Antar">
+                        🚚 ANTAR
+                    </button>
+                </div>
+            </form>
+        </div>
 
-    <!-- AKTIF -->
-    <section id="aktif">
-        <table>
-            <thead>
-                <tr>
-                    <th>Waktu</th>
-                    <th>Nama</th>
-                    <th>Layanan</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody id="list"></tbody>
-        </table>
-    </section>
-</div>
+        <div id="pesanan-aktif" class="tab-content">
+            <h2>2. Daftar Pesanan Aktif (Menunggu/Proses)</h2>
+            <div class="table-wrapper">
+                <table id="tabel-pesanan">
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Pelanggan</th>
+                            <th>Layanan</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="5" style="text-align: center;">Memuat data dari Realtime Database...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-<div id="toast" class="toast"></div>
+        <div id="history" class="tab-content">
+            <h2>3. History Pesanan Selesai</h2>
+            <div class="table-wrapper">
+                <table id="tabel-history" class="history-table">
+                    <thead>
+                        <tr>
+                            <th>ID Pesanan</th>
+                            <th>Waktu Selesai</th>
+                            <th>Pelanggan</th>
+                            <th>Layanan</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="5" style="text-align: center;">Memuat history pesanan...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div id="custom-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <h3 id="modal-title"></h3>
+            <p id="modal-message"></p>
+            <button id="modal-ok-button" class="btn btn-primary">OK</button>
+        </div>
+    </div>
+    
+    <script>
+        // INISIALISASI FIREBASE ANDA
+        const firebaseConfig = {
+            apiKey: "AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
+            authDomain: "awwabim-laundry.firebaseapp.com",
+            databaseURL: "https://awwabim-laundry-default-rtdb.firebaseio.com/", 
+            projectId: "awwabim-laundry",
+            storageBucket: "awwabim-laundry.firebasestorage.app",
+            messagingSenderId: "677594195160",
+            appId: "1:677594195160:web:2d31e777009003e19a63ad"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        
+        const db = firebase.database(); 
+        const PesananRef = db.ref('Pesanan');
+        const PelangganRef = db.ref('Pelanggan'); 
 
-<script>
-// ================= FIREBASE =================
-const firebaseConfig = {
-    apiKey: "AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
-    authDomain: "awwabim-laundry.firebaseapp.com",
-    databaseURL: "https://awwabim-laundry-default-rtdb.firebaseio.com",
-    projectId: "awwabim-laundry",
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const PesananRef = db.ref("Pesanan");
+        // Elemen DOM
+        const namaPelangganInput = document.getElementById('nama-pelanggan');
+        const kontakWaInput = document.getElementById('kontak-wa');
+        const suggestionsDiv = document.getElementById('suggestions');
+        const formPesanan = document.getElementById('form-pesanan');
+        const tabelPesananBody = document.querySelector('#tabel-pesanan tbody');
+        const tabelHistoryBody = document.querySelector('#tabel-history tbody');
+        
+        // =========================================================
+        // FUNGSI MODAL KUSTOM (PENGGANTI ALERT)
+        // =========================================================
+        function showCustomAlert(title, message, isError = false) {
+            const modal = document.getElementById('custom-modal');
+            document.getElementById('modal-message').textContent = message;
+            
+            const modalTitle = document.getElementById('modal-title');
+            
+            if (isError) {
+                 modalTitle.style.color = 'var(--color-danger)'; 
+                 modalTitle.innerHTML = '❌ ' + title;
+            } else {
+                 modalTitle.style.color = 'var(--color-success)'; 
+                 modalTitle.innerHTML = '✅ ' + title;
+            }
+            
+            modal.style.display = 'block';
 
-// ================= UI =================
-function openTab(id){
-    document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-    document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
-    event.target.classList.add("active");
-}
+            document.getElementById('modal-ok-button').onclick = function() {
+                modal.style.display = 'none';
+            };
 
-function toast(msg){
-    const t=document.getElementById("toast");
-    t.innerText=msg;
-    t.style.display="block";
-    setTimeout(()=>t.style.display="none",3000);
-}
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            };
+        }
 
-// ================= SUBMIT (ANTI BLANK) =================
-function submitPesanan(layanan){
-    const nama=document.getElementById("nama").value.trim();
-    let wa=document.getElementById("wa").value.replace(/\D/g,'');
 
-    if(!nama||!wa){
-        toast("❌ Lengkapi data");
-        return;
-    }
-    if(wa.startsWith("0")) wa="62"+wa.slice(1);
-    if(wa.startsWith("8")) wa="62"+wa;
+        // =========================================================
+        // FUNGSI UTILITY & RENDER
+        // =========================================================
 
-    const ref=PesananRef.push();
-    ref.set({
-        id:ref.key,
-        namaPelanggan:nama,
-        kontakWa:wa,
-        tipeLayanan:layanan,
-        status:"MENUNGGU_DRIVER",
-        timestamp:firebase.database.ServerValue.TIMESTAMP
-    });
+        function getStatusBadge(status) {
+            let className = '';
+            let text = '';
+            switch (status) {
+                case 'MENUNGGU_JEMPUT':
+                case 'MENUNGGU_DRIVER':
+                    className = 'status-menunggu';
+                    text = 'MENUNGGU DRIVER';
+                    break;
+                case 'PROSES_CUCI':
+                    className = 'status-proses';
+                    text = 'SEDANG DIPROSES';
+                    break;
+                case 'PROSES_ANTAR':
+                    className = 'status-proses';
+                    text = 'PROSES ANTAR';
+                    break;
+                case 'SELESAI':
+                    className = 'status-selesai';
+                    text = 'SELESAI';
+                    break;
+                default:
+                    className = 'status-menunggu';
+                    text = status.replace('_', ' ');
+            }
+            return `<span class="status-badge ${className}">${text}</span>`;
+        }
 
-    document.getElementById("nama").value="";
-    document.getElementById("wa").value="";
-    toast("✅ Pesanan masuk");
-}
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return 'N/A';
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        function renderPesananAktif(pesananAktif) {
+            tabelPesananBody.innerHTML = ''; 
 
-// ================= STATUS =================
-function nextStatus(id,st){
-    let ns="SELESAI";
-    if(st==="MENUNGGU_DRIVER") ns="PROSES_CUCI";
-    else if(st==="PROSES_CUCI") ns="PROSES_ANTAR";
-    PesananRef.child(id).update({status:ns});
-}
+            if (pesananAktif.length === 0) {
+                 tabelPesananBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Tidak ada pesanan aktif saat ini.</td></tr>';
+                 return;
+            }
 
-// ================= LISTENER =================
-PesananRef.on("value",snap=>{
-    const list=document.getElementById("list");
-    list.innerHTML="";
-    snap.forEach(c=>{
-        const d=c.val();
-        if(d.status==="SELESAI") return;
-        list.innerHTML+=`
-        <tr>
-            <td>${new Date(d.timestamp).toLocaleTimeString()}</td>
-            <td>${d.namaPelanggan}</td>
-            <td>${d.tipeLayanan}</td>
-            <td><span class="status ${d.status}">${d.status}</span></td>
-            <td><button onclick="nextStatus('${c.key}','${d.status}')">Next</button></td>
-        </tr>`;
-    });
-});
-</script>
+            pesananAktif.forEach(pesanan => {
+                const row = tabelPesananBody.insertRow();
+                row.innerHTML = `
+                    <td>${pesanan.waktu}</td>
+                    <td>${pesanan.pelanggan}</td>
+                    <td>${pesanan.layanan}</td>
+                    <td>${getStatusBadge(pesanan.status)}</td>
+                    <td>
+                        <div class="action-group">
+                            <button class="btn-wa" onclick="sendWhatsAppMessage('${pesanan.kontakWa}', '${pesanan.pelanggan}', '${pesanan.status}')">
+                                💬 Chat WA
+                            </button>
+                            <button class="btn-next-status" onclick="updateStatusRTDB('${pesanan.id}', '${pesanan.status}')" ${pesanan.status === 'SELESAI' ? 'disabled' : ''}>
+                                ${pesanan.status === 'SELESAI' ? 'Selesai' : 'Next Status'}
+                            </button>
+                        </div>
+                    </td>
+                `;
+            });
+        }
+        
+        function renderHistory(historyList) {
+            tabelHistoryBody.innerHTML = '';
+            if (historyList.length === 0) {
+                tabelHistoryBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Belum ada pesanan yang selesai.</td></tr>';
+                return;
+            }
+            historyList.forEach(pesanan => {
+                const date = pesanan.timestampSelesai ? new Date(pesanan.timestampSelesai).toLocaleDateString('id-ID') : 'N/A';
+                const time = pesanan.timestampSelesai ? new Date(pesanan.timestampSelesai).toLocaleTimeString('id-ID') : '';
+
+                const row = tabelHistoryBody.insertRow();
+                row.innerHTML = `
+                    <td>${pesanan.id.substring(0, 8)}...</td>
+                    <td>${date} ${time}</td>
+                    <td>${pesanan.pelanggan}</td>
+                    <td>${pesanan.layanan}</td>
+                    <td>${getStatusBadge(pesanan.status)}</td>
+                `;
+            });
+        }
+
+        // =========================================================
+        // FUNGSI WHATSAPP
+        // =========================================================
+        function sendWhatsAppMessage(kontakWa, namaPelanggan, status) {
+            let message = `Halo Bapak/Ibu ${namaPelanggan}, ini dari Awwabim Laundry.\n\n`;
+            
+            switch(status) {
+                case 'MENUNGGU_JEMPUT':
+                case 'MENUNGGU_DRIVER':
+                    message += `*Driver kami sedang menuju lokasi Anda* untuk mengambil cucian. Mohon ditunggu sebentar ya. Terima kasih!`;
+                    break;
+                case 'PROSES_CUCI':
+                    message += `Cucian Anda saat ini sedang dalam *proses pencucian dan pengeringan*. Kami akan segera mengabari jika sudah siap diantar.`;
+                    break;
+                case 'PROSES_ANTAR':
+                    message += `Selamat! Cucian Anda sudah selesai dan *sedang dalam perjalanan untuk diantar* ke alamat Anda. Mohon siapkan pembayaran ya. Terima kasih!`;
+                    break;
+                case 'SELESAI':
+                    message += `Selamat! Pesanan Anda telah selesai.`;
+                    break;
+                default:
+                    message += `Kami ingin mengabari mengenai status pesanan laundry Anda. Status saat ini: *${status.replace('_', ' ')}*.`;
+            }
+            
+            const whatsappURL = `https://wa.me/${kontakWa}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappURL, '_blank');
+        }
+
+
+        // =========================================================
+        // LOGIKA NAVIGASI TAB DAN LISTENERS
+        // =========================================================
+
+        function switchTab(targetTabId) {
+            const navItems = document.querySelectorAll('.main-nav .nav-item');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            navItems.forEach(nav => {
+                if (nav.getAttribute('data-tab') === targetTabId) {
+                    nav.classList.add('active');
+                } else {
+                    nav.classList.remove('active');
+                }
+            });
+
+            tabContents.forEach(content => {
+                if (content.id === targetTabId) {
+                    content.classList.add('active');
+                } else {
+                    content.classList.remove('active');
+                }
+            });
+            
+            if (targetTabId === 'history') {
+                loadHistoryOrdersRTDB(); 
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.main-nav .nav-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    switchTab(e.target.getAttribute('data-tab'));
+                });
+            });
+            switchTab('input-pesanan'); 
+        });
+
+        // =========================================================
+        // FUNGSI AUTOCMPLETE & PELANGGAN (RTDB)
+        // =========================================================
+        
+        async function showSuggestions(searchTerm) {
+            suggestionsDiv.innerHTML = '';
+            
+            if (searchTerm.length < 2) return;
+            
+            PelangganRef.orderByChild('nama')
+                .startAt(searchTerm)
+                .endAt(searchTerm + '\uf8ff')
+                .limitToFirst(5)
+                .once('value', snapshot => {
+                    if (snapshot.exists()) {
+                        snapshot.forEach(childSnapshot => {
+                            const customer = childSnapshot.val();
+                            const item = document.createElement('div');
+                            item.className = 'suggestion-item';
+                            item.textContent = `${customer.nama} (${customer.kontak})`;
+                            
+                            item.addEventListener('click', () => {
+                                fillForm(customer);
+                            });
+
+                            suggestionsDiv.appendChild(item);
+                        });
+                    }
+                });
+        }
+
+        function fillForm(customer) {
+            namaPelangganInput.value = customer.nama;
+            kontakWaInput.value = customer.kontak;
+            suggestionsDiv.innerHTML = ''; 
+        }
+
+        namaPelangganInput.addEventListener('input', (e) => {
+            showSuggestions(e.target.value);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!namaPelangganInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+                suggestionsDiv.innerHTML = '';
+            }
+        });
+
+        // =========================================================
+        // LOGIKA SUBMIT PESANAN (KE RTDB)
+        // =========================================================
+        
+        formPesanan.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            const buttonClicked = event.submitter;
+            const layanan = buttonClicked.getAttribute('data-layanan');
+
+            const nama = namaPelangganInput.value.trim();
+            const kontakWa = kontakWaInput.value.trim();
+            
+            if (!nama || !kontakWa) {
+                showCustomAlert("Input Gagal", "Nama dan Kontak WhatsApp harus diisi!", true);
+                return;
+            }
+
+            // --- FORMAT KONTAK WA KE STANDAR 62 ---
+            let formattedKontak = kontakWa.replace(/\s/g, '').replace(/[\+\-]/g, '');
+            formattedKontak = formattedKontak.replace(/[^0-9]/g, ''); 
+
+            if (formattedKontak.startsWith('0')) {
+                 formattedKontak = '62' + formattedKontak.substring(1);
+            } else if (formattedKontak.startsWith('8') && formattedKontak.length >= 9) {
+                formattedKontak = '62' + formattedKontak;
+            } 
+            // ----------------------------------------
+
+            const newPesananRef = PesananRef.push(); 
+            const newPostKey = newPesananRef.key;
+            
+            const dataPesanan = {
+                id: newPostKey,
+                namaPelanggan: nama,
+                kontakWa: formattedKontak,
+                tipeLayanan: layanan,
+                status: layanan === 'Jemput' ? 'MENUNGGU_JEMPUT' : 'MENUNGGU_DRIVER',
+                timestampPesan: firebase.database.ServerValue.TIMESTAMP, 
+                timestampSelesai: null 
+            };
+
+            try {
+                // 1. TAMBAHKAN PESANAN BARU
+                await newPesananRef.set(dataPesanan);
+
+                // 2. TAMBAHKAN/UPDATE PELANGGAN 
+                await PelangganRef.child(formattedKontak).set({
+                    nama: nama,
+                    kontak: formattedKontak,
+                    terakhirPesan: firebase.database.ServerValue.TIMESTAMP
+                });
+                
+                // NOTIFIKASI SUKSES MENGGUNAKAN MODAL KUSTOM
+                showCustomAlert("SUKSES!", 
+                    `Pesanan ${layanan} untuk ${nama} telah dibuat.\n\nKontak WA tercatat: ${formattedKontak}\nStatus Awal: Menunggu Driver.`, 
+                    false
+                );
+
+            } catch (error) {
+                console.error("Gagal menyimpan ke Realtime Database:", error);
+                showCustomAlert("Gagal Menyimpan", "Gagal membuat pesanan baru. Cek Console untuk detail error.", true);
+            }
+            
+            formPesanan.reset();
+        });
+
+
+        // =========================================================
+        // FUNGSI UPDATE STATUS (RTDB)
+        // =========================================================
+
+        async function updateStatusRTDB(id, currentStatus) {
+            let newStatus;
+            
+            if (currentStatus === 'MENUNGGU_JEMPUT' || currentStatus === 'MENUNGGU_DRIVER') {
+                newStatus = 'PROSES_CUCI';
+            } else if (currentStatus === 'PROSES_CUCI') {
+                newStatus = 'PROSES_ANTAR';
+            } else if (currentStatus === 'PROSES_ANTAR') {
+                newStatus = 'SELESAI';
+            } else {
+                return;
+            }
+
+            try {
+                const updateData = { 
+                    status: newStatus,
+                };
+                
+                if (newStatus === 'SELESAI') {
+                    updateData.timestampSelesai = firebase.database.ServerValue.TIMESTAMP;
+                }
+                
+                await PesananRef.child(id).update(updateData);
+                
+                console.log(`Status pesanan ${id} diubah menjadi ${newStatus}`);
+
+            } catch (error) {
+                console.error("Gagal update status RTDB:", error);
+                showCustomAlert("Gagal Update Status", "Gagal memperbarui status pesanan.", true);
+            }
+        }
+        
+        // =========================================================
+        // HISTORY LISTENER (RTDB)
+        // =========================================================
+        async function loadHistoryOrdersRTDB() {
+             tabelHistoryBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Mengambil data history...</td></tr>';
+             
+             PesananRef.orderByChild('status').equalTo('SELESAI').limitToLast(50).once('value', snapshot => {
+                const historyList = [];
+                snapshot.forEach(childSnapshot => {
+                    const data = childSnapshot.val();
+                    historyList.push({
+                        id: childSnapshot.key,
+                        pelanggan: data.namaPelanggan,
+                        layanan: data.tipeLayanan,
+                        status: data.status,
+                        timestampSelesai: data.timestampSelesai
+                    });
+                });
+                // Balik urutan agar yang terbaru di atas
+                historyList.reverse();
+                renderHistory(historyList);
+             }, error => {
+                 console.error("Gagal memuat history RTDB:", error);
+                 tabelHistoryBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--color-danger);">Error memuat history pesanan.</td></tr>';
+             });
+        }
+
+
+        // =========================================================
+        // INITIAL LOAD & REAL-TIME LISTENER PESANAN AKTIF (RTDB)
+        // =========================================================
+
+        window.onload = function() {
+            PesananRef.on('value', snapshot => {
+                const pesananAktif = [];
+                const allPesanan = snapshot.val();
+                
+                if (!allPesanan) {
+                    renderPesananAktif([]);
+                    return;
+                }
+
+                Object.keys(allPesanan).forEach(key => {
+                    const data = allPesanan[key];
+                    if (data.status !== 'SELESAI') {
+                        pesananAktif.push({
+                            id: key,
+                            waktu: formatTimestamp(data.timestampPesan),
+                            pelanggan: data.namaPelanggan,
+                            layanan: data.tipeLayanan,
+                            status: data.status,
+                            kontakWa: data.kontakWa 
+                        });
+                    }
+                });
+                
+                pesananAktif.sort((a, b) => (a.waktu > b.waktu) ? 1 : -1); 
+
+                renderPesananAktif(pesananAktif);
+            }, error => {
+                console.error("Error fetching pesanan RTDB:", error);
+                tabelPesananBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--color-danger);">Gagal memuat data dari Realtime Database. Cek koneksi & aturan!</td></tr>';
+            });
+        };
+
+    </script>
 </body>
 </html>
