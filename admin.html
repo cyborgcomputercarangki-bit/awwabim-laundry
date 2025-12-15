@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Laundry</title>
+<title>ADMIN AWWABIM</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
@@ -21,24 +21,50 @@ body{
 }
 .card{
  background:#fff;
- border-radius:12px;
+ border-radius:14px;
  padding:15px;
- margin-bottom:12px;
+ margin-bottom:15px;
+ box-shadow:0 6px 12px rgba(0,0,0,.15);
 }
-input,button{
+input{
  width:100%;
  padding:12px;
  margin-bottom:10px;
  border-radius:8px;
  border:1px solid #ccc;
 }
-button{
+.btn{
+ width:100%;
+ padding:14px;
  border:none;
- font-weight:bold;
+ border-radius:10px;
  color:#fff;
+ font-size:16px;
+ font-weight:bold;
+ margin-bottom:10px;
 }
-.btn-antar{background:#3498db}
-.btn-jemput{background:#27ae60}
+.btn-antar{background:linear-gradient(135deg,#3498db,#2980b9)}
+.btn-jemput{background:linear-gradient(135deg,#27ae60,#1e8449)}
+.status{
+ font-size:13px;
+ font-weight:bold;
+ padding:6px 10px;
+ border-radius:20px;
+ display:inline-block;
+}
+.MENUNGGU{background:#f39c12;color:#fff}
+.DIANTAR{background:#3498db;color:#fff}
+.DIJEMPUT{background:#27ae60;color:#fff}
+.toast{
+ position:fixed;
+ bottom:20px;
+ right:20px;
+ background:#333;
+ color:#fff;
+ padding:12px 16px;
+ border-radius:8px;
+ display:none;
+}
 .logout{
  background:#e74c3c;
  font-size:12px;
@@ -50,50 +76,38 @@ table{
  font-size:14px;
 }
 th,td{
- padding:6px;
+ padding:8px;
  border-bottom:1px solid #ddd;
  text-align:center;
 }
 th{background:#2c3e50;color:#fff}
-.toast{
- position:fixed;
- bottom:20px;
- right:20px;
- background:#333;
- color:#fff;
- padding:12px 16px;
- border-radius:8px;
- display:none;
-}
 </style>
 </head>
 
 <body>
 <div class="container">
 
-<!-- LOGIN -->
 <div class="card" id="loginBox">
  <h3>Login Admin</h3>
  <input id="adminName" placeholder="Nama Admin">
- <button class="btn-jemput" onclick="login()">MASUK</button>
+ <button class="btn btn-jemput" onclick="login()">MASUK</button>
 </div>
 
-<!-- APP -->
 <div id="app" style="display:none">
 
 <div class="card">
  <h3>Order Baru</h3>
  <input id="nama" placeholder="Nama Pelanggan">
  <input id="wa" placeholder="WhatsApp (08xxx)">
- <button class="btn-antar" onclick="kirim('ANTAR')">🛵 ANTAR</button>
- <button class="btn-jemput" onclick="kirim('JEMPUT')">🧺 JEMPUT</button>
+ <button class="btn btn-antar" onclick="kirim('ANTAR')">🛵 ANTAR</button>
+ <button class="btn btn-jemput" onclick="kirim('JEMPUT')">🧺 JEMPUT</button>
 </div>
 
 <div class="card">
  <h3>Pesanan Aktif</h3>
  <table>
   <thead>
-   <tr><th>Pelanggan</th><th>Layanan</th><th>Status</th></tr>
+   <tr><th>Nama</th><th>Layanan</th><th>Status</th></tr>
   </thead>
   <tbody id="aktif"></tbody>
  </table>
@@ -103,14 +117,13 @@ th{background:#2c3e50;color:#fff}
  <h3>History</h3>
  <table>
   <thead>
-   <tr><th>Pelanggan</th><th>Layanan</th></tr>
+   <tr><th>Nama</th><th>Layanan</th><th>Mulai</th><th>Selesai</th></tr>
   </thead>
   <tbody id="history"></tbody>
  </table>
 </div>
 
-<button class="logout" onclick="logout()">LOGOUT</button>
-
+<button class="logout btn" onclick="logout()">LOGOUT</button>
 </div>
 
 <div id="toast" class="toast"></div>
@@ -130,48 +143,49 @@ function toast(t){
 }
 
 function login(){
- const n=adminName.value.trim();
- if(!n) return toast("Isi nama");
- localStorage.setItem("adminLogin",n);
+ if(!adminName.value) return toast("Isi nama");
+ localStorage.setItem("admin",adminName.value);
  loginBox.style.display="none";
  app.style.display="block";
 }
-
-function logout(){
- localStorage.removeItem("adminLogin");
- location.reload();
+if(localStorage.getItem("admin")){
+ loginBox.style.display="none"; app.style.display="block";
 }
-
-if(localStorage.getItem("adminLogin")){
- loginBox.style.display="none";
- app.style.display="block";
-}
+function logout(){localStorage.clear();location.reload();}
 
 function kirim(l){
  let n=nama.value.trim();
  let w=wa.value.replace(/\D/g,'');
  if(!n||!w) return toast("Lengkapi data");
  if(w.startsWith("0")) w="62"+w.slice(1);
-
  db.push({
-  nama:n,
-  wa:w,
-  layanan:l,
-  status:"PROSES"
+  nama:n,wa:w,layanan:l,
+  status:"MENUNGGU",
+  mulai:Date.now()
  });
- toast("Pesanan dikirim ke driver");
- nama.value=""; wa.value="";
+ toast("Menunggu driver");
+ nama.value="";wa.value="";
 }
 
 db.on("value",s=>{
- aktif.innerHTML="";
- history.innerHTML="";
+ aktif.innerHTML=""; history.innerHTML="";
  s.forEach(c=>{
   let d=c.val();
   if(d.status==="SELESAI"){
-   history.innerHTML+=`<tr><td>${d.nama}</td><td>${d.layanan}</td></tr>`;
+   history.innerHTML+=`
+   <tr>
+    <td>${d.nama}</td>
+    <td>${d.layanan}</td>
+    <td>${new Date(d.mulai).toLocaleTimeString()}</td>
+    <td>${new Date(d.selesai).toLocaleTimeString()}</td>
+   </tr>`;
   }else{
-   aktif.innerHTML+=`<tr><td>${d.nama}</td><td>${d.layanan}</td><td>${d.status}</td></tr>`;
+   aktif.innerHTML+=`
+   <tr>
+    <td>${d.nama}</td>
+    <td>${d.layanan}</td>
+    <td><span class="status ${d.status}">${d.status}</span></td>
+   </tr>`;
   }
  });
 });
