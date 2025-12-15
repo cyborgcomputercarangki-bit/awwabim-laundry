@@ -2,158 +2,119 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Awwabim Laundry</title>
 
-<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
 
 <style>
-* { box-sizing: border-box; }
+body{
+  margin:0;
+  font-family:Segoe UI,Arial;
+  background:linear-gradient(135deg,#fceabb,#f8b500);
+}
+.container{
+  max-width:1000px;
+  margin:auto;
+  background:#fff;
+  padding:15px;
+  border-radius:12px;
+}
+h2{margin-top:10px;color:#2c3e50}
 
-body {
-  margin: 0;
-  padding: 12px;
-  font-family: system-ui, sans-serif;
-  background: linear-gradient(135deg,#fceabb,#f8b500);
-  overflow-x: hidden;
+.main-nav{
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+}
+.nav-item{
+  text-decoration:none;
+  padding:8px 12px;
+  font-weight:bold;
+  color:#555;
+}
+.nav-item.active{
+  color:#e67e22;
+  border-bottom:3px solid #e67e22;
 }
 
-.container {
-  max-width: 1000px;
-  margin: auto;
-  background: #fff;
-  border-radius: 12px;
-  padding: 15px;
-  box-shadow: 0 8px 16px rgba(0,0,0,.2);
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+form{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.brand img { height: 40px; }
-.brand h1 { margin: 0; font-size: 1.4em; }
-
-nav {
-  display: flex;
-  gap: 6px;
-  margin-top: 12px;
-  overflow-x: auto;
+input{
+  padding:10px;
+  border-radius:6px;
+  border:1px solid #ccc;
 }
 
-nav a {
-  padding: 8px 12px;
-  text-decoration: none;
-  font-weight: bold;
-  color: #555;
-  border-bottom: 3px solid transparent;
-  white-space: nowrap;
+.btn-group{
+  display:flex;
+  gap:10px;
 }
-nav a.active {
-  color: #e67e22;
-  border-bottom-color: #e67e22;
+.btn{
+  flex:1;
+  padding:12px;
+  border:none;
+  color:#fff;
+  font-weight:bold;
+  border-radius:6px;
 }
+.btn-jemput{background:#27ae60}
+.btn-antar{background:#3498db}
 
-.tab { display: none; margin-top: 15px; }
-.tab.active { display: block; }
-
-h2 { font-size: 1.1em; }
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.info-status{
+  display:none;
+  margin-top:10px;
+  padding:10px;
+  border-radius:6px;
+  font-weight:bold;
+  text-align:center;
 }
-
-input {
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 1em;
+.info-jemput{
+  background:#e9f7ef;
+  color:#27ae60;
+  border:1px solid #27ae60;
 }
-
-.btn-group {
-  display: flex;
-  gap: 10px;
+.info-antar{
+  background:#eaf2fb;
+  color:#3498db;
+  border:1px solid #3498db;
 }
 
-button {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  border-radius: 6px;
-  color: #fff;
-  font-weight: bold;
-  cursor: pointer;
+.table-wrapper{width:100%;overflow-x:auto}
+table{
+  width:100%;
+  border-collapse:collapse;
 }
-
-.btn-jemput { background:#27ae60; }
-.btn-antar  { background:#3498db; }
-
-.table-wrapper {
-  width: 100%;
-  overflow-x: auto;
+th,td{
+  padding:8px;
+  border-bottom:1px solid #eee;
+  font-size:.9em;
 }
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th,td {
-  padding: 8px;
-  font-size: .9em;
-  text-align: center;
-  border-bottom: 1px solid #eee;
-}
-
-th {
+th{
   background:#2c3e50;
   color:#fff;
 }
 
-.action-group {
-  display: flex;
-  gap: 6px;
-  justify-content: center;
+.status{
+  padding:4px 8px;
+  border-radius:12px;
+  font-size:.8em;
+  color:#fff;
 }
+.menunggu{background:#f39c12}
+.proses{background:#e74c3c}
+.selesai{background:#27ae60}
 
-.action-group button {
-  padding: 6px;
-  font-size: .8em;
-  border-radius: 4px;
-}
-
-.btn-wa { background:#25d366; }
-.btn-next { background:#2c3e50; }
-
-/* TOAST */
-.toast {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #333;
-  color: #fff;
-  padding: 12px 18px;
-  border-radius: 8px;
-  font-size: .9em;
-  opacity: 0;
-  pointer-events: none;
-  transition: all .3s ease;
-  z-index: 9999;
-}
-.toast.show { opacity: 1; bottom: 30px; }
-.toast.success { background:#27ae60; }
-.toast.error { background:#e74c3c; }
-
-/* MOBILE */
 @media(max-width:600px){
-  .action-group { flex-direction: column; }
-  .action-group button { width:100%; }
+  .btn-group{flex-direction:column}
 }
 </style>
 </head>
@@ -161,29 +122,27 @@ th {
 <body>
 <div class="container">
 
-<div class="brand">
-  <img src="https://iili.io/fa8IvdG.jpg">
-  <h1>Awwabim Laundry</h1>
-</div>
-
-<nav>
-  <a href="#" class="nav active" data-tab="order">Order Baru</a>
-  <a href="#" class="nav" data-tab="aktif">Pesanan Aktif</a>
+<nav class="main-nav">
+  <a href="#" class="nav-item active" data-tab="input">Order Baru</a>
+  <a href="#" class="nav-item" data-tab="aktif">Pesanan Aktif</a>
 </nav>
 
-<div id="order" class="tab active">
+<!-- INPUT -->
+<div id="input" class="tab-content active">
 <h2>Input Pesanan</h2>
 <form id="form">
   <input id="nama" placeholder="Nama pelanggan">
-  <input id="wa" placeholder="WhatsApp">
+  <input id="wa" placeholder="WhatsApp (08xxx)">
   <div class="btn-group">
-    <button class="btn-jemput" type="button" onclick="simpanPesanan('Jemput')">JEMPUT</button>
-    <button class="btn-antar" type="button" onclick="simpanPesanan('Antar')">ANTAR</button>
+    <button type="button" class="btn btn-jemput" onclick="simpanPesanan('JEMPUT')">🧺 JEMPUT</button>
+    <button type="button" class="btn btn-antar" onclick="simpanPesanan('ANTAR')">🚚 ANTAR</button>
   </div>
+  <div id="infoStatus" class="info-status"></div>
 </form>
 </div>
 
-<div id="aktif" class="tab">
+<!-- AKTIF -->
+<div id="aktif" class="tab-content">
 <h2>Pesanan Aktif</h2>
 <div class="table-wrapper">
 <table>
@@ -192,79 +151,87 @@ th {
 <th>Waktu</th>
 <th>Nama</th>
 <th>Layanan</th>
-<th>Aksi</th>
+<th>Status</th>
 </tr>
 </thead>
-<tbody id="list"></tbody>
+<tbody id="list">
+<tr><td colspan="4">Memuat...</td></tr>
+</tbody>
 </table>
 </div>
 </div>
 
 </div>
 
-<!-- TOAST -->
-<div id="toast" class="toast"></div>
-
 <script>
-/* NAV */
-document.querySelectorAll('.nav').forEach(n=>{
-  n.onclick=e=>{
-    e.preventDefault();
-    document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    n.classList.add('active');
-    document.getElementById(n.dataset.tab).classList.add('active');
-  }
-});
-
-/* TOAST */
-function showToast(msg,type){
-  var t=document.getElementById("toast");
-  t.className="toast show "+(type||"");
-  t.innerText=msg;
-  setTimeout(function(){ t.className="toast"; },2500);
-}
-
 /* FIREBASE */
 firebase.initializeApp({
-  apiKey: "AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
-  databaseURL: "https://awwabim-laundry-default-rtdb.firebaseio.com/"
+ apiKey: "AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
+ databaseURL: "https://awwabim-laundry-default-rtdb.firebaseio.com/"
 });
-var db=firebase.database().ref("Pesanan");
+const db=firebase.database().ref("pesanan");
+
+/* NAV */
+document.querySelectorAll(".nav-item").forEach(n=>{
+ n.onclick=e=>{
+  e.preventDefault();
+  document.querySelectorAll(".nav-item").forEach(x=>x.classList.remove("active"));
+  n.classList.add("active");
+  document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
+  document.getElementById(n.dataset.tab).classList.add("active");
+ }
+});
 
 /* SIMPAN */
 function simpanPesanan(layanan){
-  if(!nama.value || !wa.value){
-    showToast("Nama & WhatsApp wajib diisi","error");
-    return;
-  }
-  db.push({
-    nama:nama.value,
-    wa:wa.value,
-    layanan:layanan,
-    waktu:Date.now()
-  });
-  form.reset();
-  showToast("Pesanan berhasil disimpan","success");
+ let nama=document.getElementById("nama").value.trim();
+ let wa=document.getElementById("wa").value.trim();
+ let info=document.getElementById("infoStatus");
+
+ if(!nama||!wa){
+  info.style.display="block";
+  info.className="info-status";
+  info.innerText="Nama & WhatsApp wajib diisi";
+  return;
+ }
+
+ if(wa.startsWith("0")) wa="62"+wa.slice(1);
+
+ db.push({
+  nama:nama,
+  wa:wa,
+  layanan:layanan,
+  status:"MENUNGGU",
+  waktu:Date.now()
+ });
+
+ info.style.display="block";
+ if(layanan==="JEMPUT"){
+  info.className="info-status info-jemput";
+  info.innerText="✅ Pesanan JEMPUT berhasil disimpan";
+ }else{
+  info.className="info-status info-antar";
+  info.innerText="🚚 Pesanan ANTAR berhasil disimpan";
+ }
+
+ document.getElementById("form").reset();
 }
 
 /* LIST */
-db.on("value",function(s){
-  list.innerHTML="";
-  s.forEach(function(c){
-    var d=c.val();
-    list.innerHTML+=
-    "<tr>"+
-    "<td>"+new Date(d.waktu).toLocaleString("id-ID")+"</td>"+
-    "<td>"+d.nama+"</td>"+
-    "<td>"+d.layanan+"</td>"+
-    "<td>"+
-    "<div class='action-group'>"+
-    "<button class='btn-wa' onclick=\"window.open('https://wa.me/"+d.wa+"')\">WA</button>"+
-    "</div>"+
-    "</td>"+
-    "</tr>";
-  });
+db.on("value",s=>{
+ let html="";
+ s.forEach(d=>{
+  let v=d.val();
+  let jam=new Date(v.waktu).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"});
+  html+=`
+  <tr>
+    <td>${jam}</td>
+    <td>${v.nama}</td>
+    <td>${v.layanan}</td>
+    <td><span class="status menunggu">${v.status}</span></td>
+  </tr>`;
+ });
+ document.getElementById("list").innerHTML=html||"<tr><td colspan=4>Kosong</td></tr>";
 });
 </script>
 </body>
