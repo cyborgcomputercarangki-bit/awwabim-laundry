@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Awwabim Laundry - Admin</title>
 
+<!-- FIREBASE v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
 
 <style>
-/* ===== UI ASLI KAMU (TIDAK DIUBAH) ===== */
 body{
     margin:0;
     font-family:Segoe UI,Arial;
@@ -24,67 +24,117 @@ body{
     box-shadow:0 6px 15px rgba(0,0,0,.2);
 }
 h1{margin:0;color:#2c3e50}
-nav{display:flex;gap:10px;margin:15px 0}
-nav button{
-    flex:1;padding:10px;border:none;border-radius:6px;
-    font-weight:bold;background:#ecf0f1
+
+/* LOGIN BAR */
+#loginBar,#logoutBar{
+    padding:10px;
+    background:#fffbe6;
+    border-bottom:1px solid #ddd;
 }
-nav button.active{background:#e67e22;color:#fff}
+#logoutBar{background:#eafaf1;display:none}
+
+/* NAV */
+nav{
+    display:flex;
+    gap:10px;
+    margin:15px 0;
+}
+nav button{
+    flex:1;
+    padding:10px;
+    border:none;
+    border-radius:6px;
+    font-weight:bold;
+    background:#ecf0f1;
+}
+nav button.active{
+    background:#e67e22;
+    color:#fff;
+}
 section{display:none}
 section.active{display:block}
+
+/* FORM */
 input{
-    width:100%;padding:12px;margin-bottom:10px;
-    border-radius:6px;border:1px solid #ccc
+    width:100%;
+    padding:12px;
+    margin-bottom:10px;
+    border-radius:6px;
+    border:1px solid #ccc;
 }
-.btn{padding:12px;border:none;border-radius:6px;font-weight:bold;color:#fff}
+.btn{
+    padding:12px;
+    border:none;
+    border-radius:6px;
+    font-weight:bold;
+    color:#fff;
+    cursor:pointer;
+}
 .btn-jemput{background:#27ae60}
 .btn-antar{background:#3498db}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{padding:8px;border-bottom:1px solid #ddd;text-align:center}
+
+/* TABLE */
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+}
+th,td{
+    padding:8px;
+    border-bottom:1px solid #ddd;
+    text-align:center;
+}
 th{background:#2c3e50;color:#fff}
-.status{padding:5px 10px;border-radius:20px;font-size:12px;font-weight:bold}
+
+/* STATUS */
+.status{
+    padding:5px 10px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:bold;
+}
 .MENUNGGU_DRIVER{background:#f39c12}
 .PROSES_CUCI{background:#e74c3c;color:#fff}
 .PROSES_ANTAR{background:#3498db;color:#fff}
 .SELESAI{background:#27ae60;color:#fff}
-.toast{
-    position:fixed;bottom:20px;right:20px;
-    background:#333;color:#fff;
-    padding:15px;border-radius:8px;
-    display:none;z-index:9999
-}
 
-/* LOGIN */
-#loginBox{
-    position:fixed;inset:0;
-    background:rgba(0,0,0,.6);
-    display:flex;align-items:center;justify-content:center;
-}
-#loginBox div{
-    background:#fff;padding:20px;border-radius:10px;width:300px;
+/* TOAST */
+.toast{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    background:#333;
+    color:#fff;
+    padding:15px;
+    border-radius:8px;
+    display:none;
+    z-index:9999;
 }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN ADMIN -->
-<div id="loginBox">
-  <div>
-    <h3>Login Admin</h3>
-    <input id="namaAdmin" placeholder="Nama admin">
-    <button class="btn btn-antar" onclick="login()">MASUK</button>
-  </div>
+<!-- LOGIN TANPA OVERLAY -->
+<div id="loginBar">
+    <input id="namaAdmin" placeholder="Nama admin" style="width:70%">
+    <button onclick="loginAdmin()">LOGIN</button>
+</div>
+
+<div id="logoutBar">
+    Login sebagai: <b id="adminName"></b>
+    <button onclick="logoutAdmin()" style="float:right">LOGOUT</button>
 </div>
 
 <div class="container">
     <h1>🧺 Awwabim Laundry – ADMIN</h1>
 
     <nav>
-        <button class="active" onclick="openTab('input')">Order Baru</button>
-        <button onclick="openTab('aktif')">Pesanan Aktif</button>
+        <button class="active" onclick="openTab('input',this)">Order Baru</button>
+        <button onclick="openTab('aktif',this)">Pesanan Aktif</button>
     </nav>
 
+    <!-- INPUT -->
     <section id="input" class="active">
         <input id="nama" placeholder="Nama Pelanggan">
         <input id="wa" placeholder="WhatsApp (08xxx)">
@@ -94,6 +144,7 @@ th{background:#2c3e50;color:#fff}
         <button class="btn btn-antar" onclick="submitPesanan('ANTAR')">🚚 ANTAR</button>
     </section>
 
+    <!-- AKTIF -->
     <section id="aktif">
         <table>
             <thead>
@@ -113,33 +164,49 @@ th{background:#2c3e50;color:#fff}
 <div id="toast" class="toast"></div>
 
 <script>
-/* ========== FIREBASE ========== */
+/* ================= FIREBASE ================= */
 firebase.initializeApp({
  apiKey:"AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
  databaseURL:"https://awwabim-laundry-default-rtdb.firebaseio.com"
 });
-const db=firebase.database();
-const Pesanan=db.ref("Pesanan");
-const Notif=db.ref("Notifikasi");
+const db = firebase.database();
+const Pesanan = db.ref("Pesanan");
+const Notif = db.ref("Notifikasi");
 
-/* ========== LOGIN ========== */
-let admin=localStorage.getItem("admin");
-if(admin) document.getElementById("loginBox").style.display="none";
+/* ================= LOGIN ================= */
+const admin = localStorage.getItem("admin");
+const loginBar = document.getElementById("loginBar");
+const logoutBar = document.getElementById("logoutBar");
+const adminNameText = document.getElementById("adminName");
 
-function login(){
- let n=document.getElementById("namaAdmin").value.trim();
- if(!n) return alert("Nama wajib diisi");
- localStorage.setItem("admin",n);
+if(admin){
+ loginBar.style.display="none";
+ logoutBar.style.display="block";
+ adminNameText.innerText=admin;
+}
+
+function loginAdmin(){
+ const nama=document.getElementById("namaAdmin").value.trim();
+ if(!nama) return alert("Nama wajib diisi");
+ localStorage.setItem("admin",nama);
+ loginBar.style.display="none";
+ logoutBar.style.display="block";
+ adminNameText.innerText=nama;
+}
+
+function logoutAdmin(){
+ localStorage.removeItem("admin");
  location.reload();
 }
 
-/* ========== UI ========== */
-function openTab(id){
+/* ================= UI ================= */
+function openTab(id,btn){
  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
  document.getElementById(id).classList.add("active");
  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
- event.target.classList.add("active");
+ btn.classList.add("active");
 }
+
 function toast(msg){
  const t=document.getElementById("toast");
  t.innerText=msg;
@@ -147,12 +214,17 @@ function toast(msg){
  setTimeout(()=>t.style.display="none",3000);
 }
 
-/* ========== SUBMIT + NOTIF DRIVER ========== */
+/* ================= SUBMIT + NOTIF ================= */
 function submitPesanan(layanan){
  const nama=document.getElementById("nama").value.trim();
- const wa=document.getElementById("wa").value.trim();
+ let wa=document.getElementById("wa").value.replace(/\D/g,'');
  const driver=document.getElementById("driver").value.trim();
- if(!nama||!wa||!driver) return toast("❌ Lengkapi data");
+
+ if(!nama||!wa||!driver){
+  toast("❌ Lengkapi data");
+  return;
+ }
+ if(wa.startsWith("0")) wa="62"+wa.slice(1);
 
  const ref=Pesanan.push();
  ref.set({
@@ -173,20 +245,23 @@ function submitPesanan(layanan){
   dibaca:false
  });
 
- toast("✅ Order & notifikasi terkirim");
+ document.getElementById("nama").value="";
+ document.getElementById("wa").value="";
+ document.getElementById("driver").value="";
+ toast("✅ Pesanan & notifikasi terkirim");
 }
 
-/* ========== STATUS NEXT + NOTIF ADMIN ========== */
+/* ================= STATUS ================= */
 function nextStatus(id,st){
  let ns="SELESAI";
  if(st==="MENUNGGU_DRIVER") ns="PROSES_CUCI";
  else if(st==="PROSES_CUCI") ns="PROSES_ANTAR";
-
  Pesanan.child(id).update({status:ns});
 }
 
-/* ========== LIST ========== */
+/* ================= LIST ================= */
 Pesanan.on("value",snap=>{
+ const list=document.getElementById("list");
  list.innerHTML="";
  snap.forEach(c=>{
   const d=c.val();
@@ -202,7 +277,7 @@ Pesanan.on("value",snap=>{
  });
 });
 
-/* ========== NOTIF DARI DRIVER ========== */
+/* ================= NOTIF DARI DRIVER ================= */
 Notif.on("child_added",snap=>{
  const n=snap.val();
  if(n.ke==="ADMIN" && !n.dibaca){
