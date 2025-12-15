@@ -10,12 +10,21 @@
 
 <style>
 body{font-family:Segoe UI;background:#dfe6e9}
-.container{max-width:800px;margin:auto;background:#fff;padding:15px;border-radius:10px}
-input,button{width:100%;padding:10px;margin-bottom:10px}
-button{background:#27ae60;color:#fff;border:none;font-weight:bold}
+.container{
+ max-width:800px;margin:auto;background:#fff;
+ padding:15px;border-radius:10px;margin-top:20px
+}
+input,button{
+ width:100%;padding:10px;margin-bottom:10px
+}
+button{
+ background:#27ae60;color:#fff;
+ border:none;font-weight:bold;border-radius:6px
+}
 table{width:100%;border-collapse:collapse}
 th,td{padding:8px;border-bottom:1px solid #ddd;text-align:center}
 th{background:#0984e3;color:#fff}
+.logout{background:#e74c3c}
 </style>
 </head>
 
@@ -24,14 +33,16 @@ th{background:#0984e3;color:#fff}
 
 <h2>🚚 DRIVER AWWABIM LAUNDRY</h2>
 
+<!-- LOGIN -->
 <div id="login">
- <input id="namaDriver" placeholder="Nama driver">
- <button onclick="login()">MASUK</button>
+ <input id="namaDriver" placeholder="Nama Driver">
+ <button onclick="login()">LOGIN</button>
 </div>
 
+<!-- APP -->
 <div id="app" style="display:none">
  <p>Login sebagai: <b id="driverName"></b></p>
- <button onclick="logout()" style="background:#e74c3c">LOGOUT</button>
+ <button class="logout" onclick="logout()">LOGOUT</button>
 
  <table>
  <thead>
@@ -48,21 +59,37 @@ th{background:#0984e3;color:#fff}
 </div>
 
 <script>
+/* ===== FIREBASE ===== */
 firebase.initializeApp({
  apiKey:"AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
  databaseURL:"https://awwabim-laundry-default-rtdb.firebaseio.com"
 });
+const Pesanan = firebase.database().ref("Pesanan");
+const Notif = firebase.database().ref("Notifikasi");
 
-const Pesanan=firebase.database().ref("Pesanan");
-const Notif=firebase.database().ref("Notifikasi");
+/* ===== DOM ===== */
+const loginBox = document.getElementById("login");
+const appBox = document.getElementById("app");
+const driverNameEl = document.getElementById("driverName");
+const list = document.getElementById("list");
 
-let driver=localStorage.getItem("driver");
+/* ===== LOGIN DRIVER ===== */
+let driver = localStorage.getItem("driver");
+
+if(driver){
+ loginBox.style.display="none";
+ appBox.style.display="block";
+ driverNameEl.innerText=driver;
+}
 
 function login(){
- const n=namaDriver.value.trim();
+ const n=document.getElementById("namaDriver").value.trim();
  if(!n) return alert("Nama wajib diisi");
  localStorage.setItem("driver",n);
- location.reload();
+ driver=n;
+ loginBox.style.display="none";
+ appBox.style.display="block";
+ driverNameEl.innerText=driver;
 }
 
 function logout(){
@@ -70,12 +97,7 @@ function logout(){
  location.reload();
 }
 
-if(driver){
- login.style.display="none";
- app.style.display="block";
- driverName.innerText=driver;
-}
-
+/* ===== LIST PESANAN ===== */
 Pesanan.on("value",snap=>{
  list.innerHTML="";
  snap.forEach(c=>{
@@ -93,6 +115,7 @@ Pesanan.on("value",snap=>{
  });
 });
 
+/* ===== AMBIL PESANAN ===== */
 function ambil(id){
  Pesanan.child(id).update({
   status:"PROSES_CUCI",
