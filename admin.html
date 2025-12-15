@@ -8,162 +8,230 @@
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
 
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
 <style>
-*{box-sizing:border-box}
-body{
- margin:0;font-family:Segoe UI,Arial;
- background:linear-gradient(135deg,#fceabb,#f8b500)
+/* --- CSS RESET & BASE --- */
+* { box-sizing: border-box; outline: none; }
+body {
+    margin: 0; padding: 20px 10px;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #FF9966, #FF5E62); /* Warna lebih segar */
+    color: #333;
+    min-height: 100vh;
 }
-.container{max-width:900px;margin:auto;padding:15px}
-.card{
- background:#fff;border-radius:16px;padding:16px;
- margin-bottom:15px;box-shadow:0 6px 14px rgba(0,0,0,.15)
+.container { max-width: 800px; margin: auto; }
+
+/* --- CARD STYLE --- */
+.card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
-h3{margin-top:0}
-input{
- width:100%;
- padding:14px;
- font-size:16px;
- border-radius:10px;
- border:1px solid #ccc;
- margin-bottom:10px
+h3 { margin-top: 0; margin-bottom: 15px; color: #444; font-size: 1.2rem; }
+
+/* --- INPUTS --- */
+input {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    border-radius: 12px;
+    border: 2px solid #eee;
+    margin-bottom: 15px;
+    background: #fafafa;
+    transition: 0.3s;
 }
-.btn{
- width:100%;
- padding:15px;
- font-size:16px;
- border:none;
- border-radius:12px;
- color:#fff;
- font-weight:bold
+input:focus { border-color: #FF5E62; background: #fff; }
+
+/* --- BUTTONS --- */
+.btn {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
 }
-.antar{background:#3498db}
-.jemput{background:#27ae60}
-.logout{background:#e74c3c;font-size:13px;padding:10px}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:8px;border-bottom:1px solid #ddd;text-align:center}
-th{background:#2c3e50;color:#fff}
-.status{
- padding:6px 10px;border-radius:20px;
- font-size:12px;color:#fff
+.btn:active { transform: scale(0.98); }
+.btn-group { display: flex; gap: 10px; margin-top: 10px; }
+
+.antar { background: #3498db; }  /* Biru */
+.jemput { background: #27ae60; } /* Hijau */
+.logout { background: #e74c3c; margin-top: 20px; } /* Merah */
+
+/* --- TABLE & LIST --- */
+.table-wrapper { overflow-x: auto; } /* Agar tabel bisa discroll horizontal di HP */
+table { width: 100%; border-collapse: collapse; min-width: 400px; }
+th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
+th { background: #f8f9fa; color: #555; font-weight: 600; }
+tr:last-child td { border-bottom: none; }
+
+/* --- STATUS BADGES --- */
+.badge {
+    padding: 5px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: bold; color: #fff; display: inline-block;
 }
-.MENUNGGU_DRIVER{background:#f39c12}
-.SEDANG_DIANTAR{background:#3498db}
-.SEDANG_DIJEMPUT{background:#27ae60}
+.MENUNGGU_DRIVER { background: #f1c40f; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+.SEDANG_DIANTAR { background: #3498db; }
+.SEDANG_DIJEMPUT { background: #27ae60; }
+.SELESAI { background: #95a5a6; }
 </style>
 </head>
 
 <body>
 <div class="container">
 
-<!-- LOGIN -->
-<div class="card" id="loginBox">
- <h3>Login Admin</h3>
- <input id="adminName" placeholder="Nama Admin" autocomplete="name">
- <button class="btn jemput" onclick="doLogin()">MASUK</button>
-</div>
+    <div class="card" id="loginBox">
+        <h3>🔐 Login Admin</h3>
+        <input id="adminName" placeholder="Masukkan Nama Admin" autocomplete="off">
+        <button class="btn jemput" onclick="doLogin()">MASUK DASHBOARD</button>
+    </div>
 
-<!-- APP -->
-<div id="app" style="display:none">
+    <div id="app" style="display:none">
+        
+        <div class="card">
+            <h3>📝 Order Baru</h3>
+            <input id="nama" placeholder="Nama Pelanggan" autocomplete="off">
+            <input id="wa" placeholder="WhatsApp (cth: 0812xxx)" type="tel" inputmode="numeric"> 
+            
+            <div class="btn-group">
+                <button class="btn antar" onclick="buatOrder('ANTAR')">🛵 ANTAR</button>
+                <button class="btn jemput" onclick="buatOrder('JEMPUT')">🧺 JEMPUT</button>
+            </div>
+        </div>
 
-<div class="card">
- <h3>Order Baru</h3>
- <input id="nama" placeholder="Nama Pelanggan" autocomplete="name">
- <input id="wa" placeholder="WhatsApp (08xxx)" type="tel" autocomplete="tel">
- <button class="btn antar" onclick="buatOrder('ANTAR')">🛵 ANTAR</button>
- <br><br>
- <button class="btn jemput" onclick="buatOrder('JEMPUT')">🧺 JEMPUT</button>
-</div>
+        <div class="card">
+            <h3>🔥 Pesanan Berjalan</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>Nama</th><th>Layanan</th><th>Status</th></tr>
+                    </thead>
+                    <tbody id="listAktif"></tbody>
+                </table>
+            </div>
+        </div>
 
-<div class="card">
- <h3>Pesanan Aktif</h3>
- <table>
-  <thead>
-   <tr><th>Nama</th><th>Layanan</th><th>Status</th></tr>
-  </thead>
-  <tbody id="aktif"></tbody>
- </table>
-</div>
+        <div class="card">
+            <h3>📜 Riwayat Selesai</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>Nama</th><th>Layanan</th><th>Waktu</th></tr>
+                    </thead>
+                    <tbody id="listHistory"></tbody>
+                </table>
+            </div>
+        </div>
 
-<div class="card">
- <h3>History</h3>
- <table>
-  <thead>
-   <tr><th>Nama</th><th>Layanan</th><th>Mulai</th><th>Selesai</th></tr>
-  </thead>
-  <tbody id="history"></tbody>
- </table>
-</div>
+        <button class="btn logout" onclick="logout()">KELUAR (LOGOUT)</button>
+    </div>
 
-<button class="btn logout" onclick="logout()">LOGOUT</button>
 </div>
 
 <script>
-firebase.initializeApp({
- apiKey:"AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
- databaseURL:"https://awwabim-laundry-default-rtdb.firebaseio.com"
-});
-const db=firebase.database().ref("Pesanan");
+// --- KONFIGURASI FIREBASE ---
+const firebaseConfig = {
+    apiKey: "AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
+    databaseURL: "https://awwabim-laundry-default-rtdb.firebaseio.com"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database().ref("Pesanan");
 
-const loginBox=document.getElementById("loginBox");
-const app=document.getElementById("app");
+// --- VARIABEL DOM ---
+const loginBox = document.getElementById("loginBox");
+const app = document.getElementById("app");
+const inpNama = document.getElementById("nama");
+const inpWa = document.getElementById("wa");
+const tAktif = document.getElementById("listAktif");
+const tHistory = document.getElementById("listHistory"); // ID BARU
 
+// --- FUNGSI LOGIN ---
 function doLogin(){
- const n=document.getElementById("adminName").value.trim();
- if(!n) return;
- localStorage.setItem("admin",n);
- loginBox.style.display="none";
- app.style.display="block";
+    const n = document.getElementById("adminName").value.trim();
+    if(!n) return alert("Nama admin wajib diisi!");
+    localStorage.setItem("admin", n);
+    checkAuth();
 }
 
-if(localStorage.getItem("admin")){
- loginBox.style.display="none";
- app.style.display="block";
+function checkAuth(){
+    if(localStorage.getItem("admin")){
+        loginBox.style.display = "none";
+        app.style.display = "block";
+    }
 }
+checkAuth(); // Jalankan saat load
 
 function logout(){
- localStorage.clear();
- location.reload();
+    if(confirm("Yakin ingin keluar?")){
+        localStorage.clear();
+        location.reload();
+    }
 }
 
-function buatOrder(l){
- const n=nama.value.trim();
- let w=wa.value.replace(/\D/g,'');
- if(!n||!w) return;
- if(w.startsWith("0")) w="62"+w.slice(1);
+// --- LOGIC APLIKASI ---
+function buatOrder(layanan){
+    const nama = inpNama.value.trim();
+    let wa = inpWa.value.replace(/\D/g,''); // Hapus selain angka
+    
+    if(!nama || !wa) return alert("Data belum lengkap!");
+    
+    // Format WA ke 62
+    if(wa.startsWith("0")) wa = "62" + wa.slice(1);
 
- db.push({
-  nama:n,
-  wa:w,
-  layanan:l,
-  status:"MENUNGGU_DRIVER",
-  mulai:firebase.database.ServerValue.TIMESTAMP
- });
- nama.value="";wa.value="";
+    db.push({
+        nama: nama,
+        wa: wa,
+        layanan: layanan,
+        status: "MENUNGGU_DRIVER",
+        mulai: firebase.database.ServerValue.TIMESTAMP
+    });
+
+    inpNama.value = "";
+    inpWa.value = "";
+    alert("Order berhasil dibuat!");
 }
 
-db.on("value",snap=>{
- aktif.innerHTML="";
- history.innerHTML="";
- snap.forEach(c=>{
-  const d=c.val();
-  if(d.status==="SELESAI"){
-   history.innerHTML+=`
-    <tr>
-     <td>${d.nama}</td>
-     <td>${d.layanan}</td>
-     <td>${new Date(d.mulai).toLocaleTimeString()}</td>
-     <td>${d.selesai?new Date(d.selesai).toLocaleTimeString():"-"}</td>
-    </tr>`;
-  }else{
-   aktif.innerHTML+=`
-    <tr>
-     <td>${d.nama}</td>
-     <td>${d.layanan}</td>
-     <td><span class="status ${d.status}">${d.status}</span></td>
-    </tr>`;
-  }
- });
+// --- REALTIME LISTENER ---
+db.on("value", snap => {
+    tAktif.innerHTML = "";
+    tHistory.innerHTML = "";
+
+    const dataArray = [];
+    snap.forEach(child => {
+        dataArray.push(child.val());
+    });
+    
+    // Balik urutan array agar yang terbaru di atas
+    dataArray.reverse();
+
+    dataArray.forEach(d => {
+        if(d.status === "SELESAI"){
+            // Tampilkan Jam Selesai
+            const waktuSelesai = d.selesai ? new Date(d.selesai).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "-";
+            const row = `
+                <tr>
+                    <td>${d.nama}</td>
+                    <td><b>${d.layanan}</b></td>
+                    <td>${waktuSelesai}</td>
+                </tr>`;
+            tHistory.innerHTML += row;
+        } else {
+            const row = `
+                <tr>
+                    <td>${d.nama}</td>
+                    <td><b>${d.layanan}</b></td>
+                    <td><span class="badge ${d.status}">${d.status.replace("_"," ")}</span></td>
+                </tr>`;
+            tAktif.innerHTML += row;
+        }
+    });
 });
 </script>
 </body>
