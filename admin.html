@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ADMIN AWWABIN</title>
+<title>ADMIN AWWABIM</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
@@ -67,7 +67,7 @@ input:focus { border-color: #FF5E62; background: #fff; }
 .jemput { background: #27ae60; }
 .logout { background: #e74c3c; margin-top: 20px; }
 .pilih-kontak { 
-    background: #555; /* Ubah warna agar berbeda dari hijau WA yang berkonotasi langsung chat */
+    background: #2980b9; /* Biru yang menarik perhatian */
     padding: 10px; margin-bottom: 15px;
     font-size: 14px;
 }
@@ -149,7 +149,7 @@ th { background: #f8f9fa; color: #555; font-weight: 600; }
             <input id="wa" placeholder="WhatsApp (cth: 0812xxx)" type="tel" inputmode="numeric" autocomplete="tel"> 
             
             <button class="btn pilih-kontak" onclick="pilihKontak()">
-                💾 SALIN/TEMPEL (Copy/Paste) NOMOR HP
+                📞 PILIH NOMOR DARI KONTAK HP
             </button>
             
             <div class="btn-group">
@@ -252,9 +252,19 @@ function logout(){
 
 // --- ORDER LOGIC ---
 function pilihKontak(){
-    // Menggunakan trik sederhana untuk memicu admin membuka Kontak HP secara manual
-    // dan mengingatkan admin untuk menggunakan copy-paste
-    showToast("Instruksi: Buka daftar Kontak HP Anda, salin (copy) nomor pelanggan, lalu tempel (paste) di kolom WhatsApp di atas!", "#555");
+    // **********************************************
+    // INI ADALAH TRIK UNTUK MEMICU DIALOG KONTAK HP
+    // **********************************************
+    
+    // 1. Fokuskan input ke kolom WA. Di sebagian besar HP, ini akan memicu keyboard.
+    inpWa.focus();
+
+    // 2. Kemudian, panggil URI skema tel: melalui window.location 
+    //    untuk meminta OS/Browser menampilkan dialog kontak.
+    //    Ini hanya berfungsi jika user sudah berinteraksi dengan halaman.
+    window.location.href = 'tel:'; 
+    
+    showToast("Pilih nomor dari daftar kontak yang muncul!", "#2980b9");
 }
 
 function buatOrder(layanan){
