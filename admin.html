@@ -8,29 +8,43 @@
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-/* --- CSS RESET & BASE --- */
+/* --- BASE STYLE --- */
 * { box-sizing: border-box; outline: none; }
 body {
-    margin: 0; padding: 20px 10px;
+    margin: 0; padding: 0; /* Padding dihandle container */
     font-family: 'Poppins', sans-serif;
     background: linear-gradient(135deg, #FF9966, #FF5E62);
     color: #333;
     min-height: 100vh;
 }
-.container { max-width: 800px; margin: auto; }
+.container { max-width: 800px; margin: auto; padding: 15px; padding-top: 80px; }
+
+/* --- HEADER PROFIL (Fixed Top) --- */
+.header-bar {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: #fff; padding: 10px 20px;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 100;
+}
+.brand { font-weight: 700; color: #FF5E62; font-size: 18px; }
+.user-profile { display: flex; align-items: center; gap: 10px; }
+.user-name { font-size: 14px; font-weight: 600; text-align: right; }
+.user-role { font-size: 11px; color: #888; display: block; }
+.avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 2px solid #FF5E62;
+}
 
 /* --- CARD STYLE --- */
 .card {
-    background: #fff;
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    background: #fff; border-radius: 16px; padding: 20px;
+    margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
-h3 { margin-top: 0; margin-bottom: 15px; color: #444; font-size: 1.2rem; }
+h3 { margin-top: 0; margin-bottom: 15px; color: #444; font-size: 1.1rem; }
 
 /* --- INPUTS --- */
 input {
@@ -46,53 +60,75 @@ input:focus { border-color: #FF5E62; background: #fff; }
     border: none; border-radius: 12px;
     color: #fff; font-weight: 600; cursor: pointer;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
 }
 .btn:active { transform: scale(0.98); }
 .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-
 .antar { background: #3498db; }
 .jemput { background: #27ae60; }
 .logout { background: #e74c3c; margin-top: 20px; }
 
-/* --- TABLE --- */
-.table-wrapper { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; min-width: 400px; }
-th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: middle; }
+/* --- TABLE (RESPONSIVE FIX) --- */
+table {
+    width: 100%; 
+    border-collapse: collapse; 
+    table-layout: fixed; /* Kunci lebar tabel agar pas layar */
+}
+th, td {
+    padding: 10px 5px; 
+    text-align: left; 
+    border-bottom: 1px solid #eee; 
+    font-size: 13px; /* Font agak kecil agar muat */
+    vertical-align: top;
+    word-wrap: break-word; /* Bungkus teks panjang ke bawah */
+}
 th { background: #f8f9fa; color: #555; font-weight: 600; }
+.col-nama { width: 35%; }
+.col-layanan { width: 30%; }
+.col-status { width: 35%; }
 
 /* --- STATUS BADGES --- */
 .badge {
-    padding: 5px 10px; border-radius: 20px;
-    font-size: 11px; font-weight: bold; color: #fff; display: inline-block;
+    padding: 4px 8px; border-radius: 6px;
+    font-size: 10px; font-weight: bold; color: #fff; display: inline-block; margin-bottom: 2px;
 }
-.MENUNGGU_DRIVER { background: #f1c40f; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+.MENUNGGU_DRIVER { background: #f1c40f; color: #fff; }
 .SEDANG_DIANTAR { background: #3498db; }
 .SEDANG_DIJEMPUT { background: #27ae60; }
 .SELESAI { background: #95a5a6; }
 
-.driver-info {
-    font-size: 11px; color: #555; font-style: italic; display: block; margin-top: 4px;
-}
+.driver-info { font-size: 10px; color: #555; font-style: italic; display: block; }
 
-/* --- TOAST NOTIFICATION --- */
-#toast-box {
-    position: fixed; top: 20px; right: 20px; z-index: 9999;
-}
+/* --- TOAST --- */
+#toast-box { position: fixed; top: 80px; right: 20px; z-index: 9999; }
 .toast {
-    background: #333; color: #fff; padding: 12px 20px;
-    border-radius: 8px; margin-bottom: 10px;
+    background: #333; color: #fff; padding: 10px 20px;
+    border-radius: 8px; margin-bottom: 10px; font-size: 13px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     animation: slideIn 0.3s, fadeOut 0.5s 2.5s forwards;
-    font-size: 14px;
 }
 @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
 @keyframes fadeOut { to { opacity: 0; } }
+
+/* Login Box Adjustment */
+#loginBox { margin-top: 50px; }
 </style>
 </head>
 
 <body>
-<div id="toast-box"></div> <div class="container">
+<div id="toast-box"></div> 
+
+<div id="headerBar" class="header-bar" style="display:none">
+    <div class="brand">ADMIN PANEL</div>
+    <div class="user-profile">
+        <div>
+            <div class="user-name" id="dispName">Admin</div>
+            <span class="user-role">Administrator</span>
+        </div>
+        <img id="dispImg" src="" class="avatar" alt="User">
+    </div>
+</div>
+
+<div class="container">
 
     <div class="card" id="loginBox">
         <h3>🔐 Login Admin</h3>
@@ -115,35 +151,39 @@ th { background: #f8f9fa; color: #555; font-weight: 600; }
 
         <div class="card">
             <h3>🔥 Pesanan Berjalan</h3>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr><th>Nama</th><th>Layanan</th><th>Status / Driver</th></tr>
-                    </thead>
-                    <tbody id="listAktif"></tbody>
-                </table>
-            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-nama">Nama</th>
+                        <th class="col-layanan">Layanan</th>
+                        <th class="col-status">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="listAktif"></tbody>
+            </table>
         </div>
 
         <div class="card">
             <h3>📜 Riwayat Selesai</h3>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr><th>Nama</th><th>Layanan (Driver)</th><th>Waktu</th></tr>
-                    </thead>
-                    <tbody id="listHistory"></tbody>
-                </table>
-            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-nama">Nama</th>
+                        <th class="col-layanan">Info</th>
+                        <th class="col-status">Waktu</th>
+                    </tr>
+                </thead>
+                <tbody id="listHistory"></tbody>
+            </table>
         </div>
 
-        <button class="btn logout" onclick="logout()">KELUAR (LOGOUT)</button>
+        <button class="btn logout" onclick="logout()">KELUAR</button>
     </div>
 
 </div>
 
 <script>
-// --- CONFIG FIREBASE ---
+// --- FIREBASE ---
 const firebaseConfig = {
     apiKey: "AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
     databaseURL: "https://awwabim-laundry-default-rtdb.firebaseio.com"
@@ -151,15 +191,19 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database().ref("Pesanan");
 
-// --- DOM ---
+// --- DOM ELEMENTS ---
 const loginBox = document.getElementById("loginBox");
 const app = document.getElementById("app");
+const headerBar = document.getElementById("headerBar");
+const dispName = document.getElementById("dispName");
+const dispImg = document.getElementById("dispImg");
+
 const inpNama = document.getElementById("nama");
 const inpWa = document.getElementById("wa");
 const tAktif = document.getElementById("listAktif");
 const tHistory = document.getElementById("listHistory");
 
-// --- UTILS ---
+// --- TOAST ---
 function showToast(msg, color="#27ae60"){
     const box = document.getElementById("toast-box");
     const el = document.createElement("div");
@@ -170,7 +214,7 @@ function showToast(msg, color="#27ae60"){
     setTimeout(()=> el.remove(), 3000);
 }
 
-// --- LOGIN ---
+// --- LOGIN/PROFILE ---
 function doLogin(){
     const n = document.getElementById("adminName").value.trim();
     if(!n) return showToast("Nama admin wajib diisi!", "#e74c3c");
@@ -179,24 +223,31 @@ function doLogin(){
 }
 
 function checkAuth(){
-    if(localStorage.getItem("admin")){
+    const user = localStorage.getItem("admin");
+    if(user){
         loginBox.style.display = "none";
         app.style.display = "block";
+        headerBar.style.display = "flex";
+        
+        // Set Profile Header
+        dispName.innerText = user;
+        // API Avatar Generator (Berdasarkan Nama)
+        dispImg.src = `https://ui-avatars.com/api/?name=${user}&background=random&color=fff`;
     }
 }
-checkAuth();
+checkAuth(); // Auto run
 
 function logout(){
     localStorage.clear();
     location.reload();
 }
 
-// --- LOGIC ORDER ---
+// --- ORDER LOGIC ---
 function buatOrder(layanan){
     const nama = inpNama.value.trim();
     let wa = inpWa.value.replace(/\D/g,'');
     
-    if(!nama || !wa) return showToast("Data belum lengkap!", "#e74c3c");
+    if(!nama || !wa) return showToast("Lengkapi data dulu!", "#e74c3c");
     if(wa.startsWith("0")) wa = "62" + wa.slice(1);
 
     db.push({
@@ -204,13 +255,13 @@ function buatOrder(layanan){
         wa: wa,
         layanan: layanan,
         status: "MENUNGGU_DRIVER",
-        driverName: "", // Awalnya kosong
+        driverName: "",
         mulai: firebase.database.ServerValue.TIMESTAMP
     });
 
     inpNama.value = "";
     inpWa.value = "";
-    showToast(`Pesanan ${layanan} diteruskan ke driver!`, "#2980b9");
+    showToast(`Order ${layanan} diteruskan!`, "#2980b9");
 }
 
 // --- REALTIME LISTENER ---
@@ -225,22 +276,18 @@ db.on("value", snap => {
     dataArray.reverse();
 
     dataArray.forEach(d => {
-        const drv = d.driverName ? `<span class="driver-info">Oleh: ${d.driverName}</span>` : "";
+        const drv = d.driverName ? `<span class="driver-info">Driver: ${d.driverName}</span>` : "";
 
         if(d.status === "SELESAI"){
             const waktuSelesai = d.selesai ? new Date(d.selesai).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "-";
-            const row = `
+            tHistory.innerHTML += `
                 <tr>
                     <td>${d.nama}</td>
-                    <td>
-                        <b>${d.layanan}</b>
-                        ${drv}
-                    </td>
+                    <td><b>${d.layanan}</b><br>${drv}</td>
                     <td>${waktuSelesai}</td>
                 </tr>`;
-            tHistory.innerHTML += row;
         } else {
-            const row = `
+            tAktif.innerHTML += `
                 <tr>
                     <td>${d.nama}</td>
                     <td><b>${d.layanan}</b></td>
@@ -249,7 +296,6 @@ db.on("value", snap => {
                         ${drv}
                     </td>
                 </tr>`;
-            tAktif.innerHTML += row;
         }
     });
 });
