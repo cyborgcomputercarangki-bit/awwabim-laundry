@@ -14,51 +14,43 @@ body{margin:0;font-family:Segoe UI;background:#f2f2f2}
 .card{background:#fff;padding:12px;border-radius:10px;margin-bottom:10px}
 input,button{width:100%;padding:12px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc}
 button{border:none;font-weight:bold;color:#fff}
+.btn{background:#27ae60}
 .btn-antar{background:#3498db}
-.btn-jemput{background:#27ae60}
-table{width:100%;border-collapse:collapse;font-size:14px}
+.logout{background:#e74c3c}
+table{width:100%;border-collapse:collapse}
 th,td{padding:6px;border-bottom:1px solid #ddd;text-align:center}
 th{background:#2c3e50;color:#fff}
-.badge{padding:4px 8px;border-radius:12px;color:#fff;font-size:12px}
-
-.toast{
- position:fixed;
- bottom:20px;
- right:20px;
- background:#333;
- color:#fff;
- padding:12px 16px;
- border-radius:8px;
- display:none;
- z-index:9999;
-}
+.toast{position:fixed;bottom:20px;right:20px;background:#333;color:#fff;padding:12px;border-radius:8px;display:none}
 </style>
 </head>
 
 <body>
 <div class="container">
 
+<!-- LOGIN -->
+<div class="card" id="loginBox">
+ <h3>Login Admin</h3>
+ <input id="adminName" placeholder="Nama Admin">
+ <button class="btn" onclick="loginAdmin()">MASUK</button>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+
+<button class="logout" onclick="logout()">LOGOUT</button>
+
 <div class="card">
 <h3>Order Baru</h3>
 <input id="nama" placeholder="Nama Pelanggan">
-<input list="kontak" id="wa" placeholder="WhatsApp">
-<datalist id="kontak"></datalist>
-
-<button class="btn-jemput" onclick="buat('JEMPUT')">🧺 JEMPUT</button>
+<input id="wa" placeholder="WhatsApp">
+<button class="btn" onclick="buat('JEMPUT')">🧺 JEMPUT</button>
 <button class="btn-antar" onclick="buat('ANTAR')">🛵 ANTAR</button>
 </div>
 
 <div class="card">
-<h3>Pesanan Aktif</h3>
+<h3>Aktif</h3>
 <table>
-<thead>
-<tr>
-<th>Pelanggan</th>
-<th>Driver</th>
-<th>Status</th>
-<th>Aksi</th>
-</tr>
-</thead>
+<thead><tr><th>Pelanggan</th><th>Driver</th><th>Status</th><th>Aksi</th></tr></thead>
 <tbody id="aktif"></tbody>
 </table>
 </div>
@@ -66,13 +58,7 @@ th{background:#2c3e50;color:#fff}
 <div class="card">
 <h3>History</h3>
 <table>
-<thead>
-<tr>
-<th>Pelanggan</th>
-<th>Driver</th>
-<th>Status</th>
-</tr>
-</thead>
+<thead><tr><th>Pelanggan</th><th>Driver</th><th>Status</th></tr></thead>
 <tbody id="history"></tbody>
 </table>
 </div>
@@ -80,6 +66,7 @@ th{background:#2c3e50;color:#fff}
 </div>
 
 <div id="toast" class="toast"></div>
+</div>
 
 <script>
 firebase.initializeApp({
@@ -88,61 +75,48 @@ firebase.initializeApp({
 });
 const db=firebase.database().ref("Pesanan");
 
-function toast(msg){
- let t=document.getElementById("toast");
- t.innerText=msg;
- t.style.display="block";
- setTimeout(()=>t.style.display="none",3000);
+function toast(t){const x=document.getElementById("toast");x.innerText=t;x.style.display="block";setTimeout(()=>x.style.display="none",3000);}
+
+function loginAdmin(){
+ let n=adminName.value.trim();
+ if(!n)return toast("Nama wajib");
+ localStorage.setItem("adminLogin",n);
+ loginBox.style.display="none";
+ app.style.display="block";
+ toast("Login Admin");
+}
+
+function logout(){
+ localStorage.removeItem("adminLogin");
+ location.reload();
+}
+
+if(localStorage.getItem("adminLogin")){
+ loginBox.style.display="none";
+ app.style.display="block";
 }
 
 function buat(l){
- let n=nama.value.trim();
- let w=wa.value.replace(/\D/g,'');
- if(!n||!w) return toast("❌ Lengkapi data");
- if(w.startsWith("0")) w="62"+w.slice(1);
-
- db.push({
-  nama:n,wa:w,layanan:l,
-  status:l==="ANTAR"?"SEDANG_DIANTAR":"SEDANG_DIJEMPUT",
-  driver:"",
-  waktu:Date.now()
- });
-
- toast(`📤 Pesanan ${l} dikirim ke driver`);
+ let n=nama.value.trim(), w=wa.value.replace(/\D/g,'');
+ if(!n||!w)return toast("Lengkapi");
+ if(w.startsWith("0"))w="62"+w.slice(1);
+ db.push({nama:n,wa:w,layanan:l,status:l==="ANTAR"?"SEDANG_DIANTAR":"SEDANG_DIJEMPUT",driver:"",waktu:Date.now()});
+ toast("Pesanan dikirim");
  nama.value="";wa.value="";
 }
 
 db.on("value",s=>{
- aktif.innerHTML=""; history.innerHTML=""; kontak.innerHTML="";
+ aktif.innerHTML="";history.innerHTML="";
  s.forEach(c=>{
   let d=c.val();
-  kontak.innerHTML+=`<option value="${d.wa}">${d.nama}</option>`;
-
   if(d.status==="SELESAI"){
-   history.innerHTML+=`
-   <tr><td>${d.nama}</td><td>${d.driver}</td><td>SELESAI</td></tr>`;
+   history.innerHTML+=`<tr><td>${d.nama}</td><td>${d.driver}</td><td>SELESAI</td></tr>`;
    return;
   }
-
-  let aksi="";
-  if(d.status==="SEDANG_DICUCI"){
-   aksi=`<button class="btn-antar" onclick="antar('${c.key}')">🛵 ANTAR</button>`;
-  }
-
-  aktif.innerHTML+=`
-  <tr>
-   <td>${d.nama}</td>
-   <td>${d.driver||"-"}</td>
-   <td>${d.status}</td>
-   <td>${aksi}</td>
-  </tr>`;
+  let aksi=d.status==="SEDANG_DICUCI"?`<button class="btn-antar" onclick="db.child('${c.key}').update({status:'SIAP_DIANTAR'})">🛵 ANTAR</button>`:"";
+  aktif.innerHTML+=`<tr><td>${d.nama}</td><td>${d.driver||"-"}</td><td>${d.status}</td><td>${aksi}</td></tr>`;
  });
 });
-
-function antar(id){
- db.child(id).update({status:"SIAP_DIANTAR"});
- toast("🛵 Pesanan siap diantar");
-}
 </script>
 </body>
 </html>
