@@ -5,197 +5,133 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Awwabim Laundry</title>
 
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
 
 <style>
-:root {
-    --primary: #2c3e50;
-    --accent: #e67e22;
-    --success: #27ae60;
-    --info: #3498db;
-    --danger: #e74c3c;
-}
-
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
-    margin: 0;
-    padding: 12px;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    background: linear-gradient(135deg, #fceabb, #f8b500);
-    overflow-x: hidden;
+  margin: 0;
+  padding: 12px;
+  font-family: system-ui, sans-serif;
+  background: linear-gradient(135deg,#fceabb,#f8b500);
+  overflow-x: hidden;
 }
 
 .container {
-    max-width: 1000px;
-    margin: auto;
-    background: #fff;
-    border-radius: 12px;
-    padding: 15px;
-    box-shadow: 0 8px 16px rgba(0,0,0,.2);
+  max-width: 1000px;
+  margin: auto;
+  background: #fff;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 8px 16px rgba(0,0,0,.2);
 }
 
-.brand-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand img { height: 40px; }
+.brand h1 { margin: 0; font-size: 1.4em; }
+
+nav {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+  overflow-x: auto;
 }
 
-.brand-header img {
-    height: 40px;
+nav a {
+  padding: 8px 12px;
+  text-decoration: none;
+  font-weight: bold;
+  color: #555;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+}
+nav a.active {
+  color: #e67e22;
+  border-bottom-color: #e67e22;
 }
 
-.brand-header h1 {
-    margin: 0;
-    font-size: 1.4em;
-    color: var(--primary);
-}
+.tab { display: none; margin-top: 15px; }
+.tab.active { display: block; }
 
-.main-nav {
-    display: flex;
-    gap: 4px;
-    margin-top: 12px;
-    overflow-x: auto;
-}
-
-.nav-item {
-    padding: 8px 12px;
-    font-size: .9em;
-    text-decoration: none;
-    color: #555;
-    font-weight: 600;
-    border-bottom: 3px solid transparent;
-    white-space: nowrap;
-}
-
-.nav-item.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-}
-
-.tab-content {
-    display: none;
-    margin-top: 15px;
-}
-.tab-content.active {
-    display: block;
-}
-
-h2 {
-    font-size: 1.1em;
-    color: var(--primary);
-    margin-bottom: 12px;
-}
+h2 { font-size: 1.1em; }
 
 form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-label {
-    font-weight: 600;
-    margin-bottom: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 input {
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-size: 1em;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1em;
 }
 
 .btn-group {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 10px;
 }
 
-.btn {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    color: #fff;
-    cursor: pointer;
+button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
 }
 
-.btn-jemput { background: var(--success); }
-.btn-antar  { background: var(--info); }
+.btn-jemput { background:#27ae60; }
+.btn-antar  { background:#3498db; }
 
 .table-wrapper {
-    width: 100%;
-    overflow-x: auto;
+  width: 100%;
+  overflow-x: auto;
 }
 
 table {
-    width: 100%;
-    border-collapse: collapse;
+  width: 100%;
+  border-collapse: collapse;
 }
 
-th, td {
-    padding: 8px;
-    font-size: .9em;
-    border-bottom: 1px solid #eee;
-    text-align: center;
+th,td {
+  padding: 8px;
+  font-size: .9em;
+  text-align: center;
+  border-bottom: 1px solid #eee;
 }
 
 th {
-    background: var(--primary);
-    color: #fff;
+  background:#2c3e50;
+  color:#fff;
 }
-
-.status-badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: .8em;
-    font-weight: bold;
-    display: inline-block;
-}
-
-.status-menunggu { background: #f1c40f; }
-.status-proses   { background: var(--danger); color:#fff; }
-.status-selesai  { background: var(--success); color:#fff; }
 
 .action-group {
-    display: flex;
-    gap: 6px;
-    justify-content: center;
+  display: flex;
+  gap: 6px;
+  justify-content: center;
 }
 
 .action-group button {
-    padding: 6px 8px;
-    font-size: .8em;
-    border: none;
-    border-radius: 4px;
-    color: #fff;
-    cursor: pointer;
+  padding: 6px;
+  font-size: .8em;
+  border-radius: 4px;
 }
 
-.btn-wa { background: #25d366; }
-.btn-next { background: var(--primary); }
+.btn-wa { background:#25d366; }
+.btn-next { background:#2c3e50; }
 
-/* ===== MOBILE FIX ===== */
-@media (max-width: 600px) {
-    th, td {
-        font-size: .8em;
-        padding: 6px;
-    }
-
-    .action-group {
-        flex-direction: column;
-    }
-
-    .action-group button {
-        width: 100%;
-    }
-}
-
-    .toast {
+/* TOAST */
+.toast {
   position: fixed;
   bottom: 20px;
   left: 50%;
@@ -210,48 +146,44 @@ th {
   transition: all .3s ease;
   z-index: 9999;
 }
+.toast.show { opacity: 1; bottom: 30px; }
+.toast.success { background:#27ae60; }
+.toast.error { background:#e74c3c; }
 
-.toast.show {
-  opacity: 1;
-  bottom: 30px;
+/* MOBILE */
+@media(max-width:600px){
+  .action-group { flex-direction: column; }
+  .action-group button { width:100%; }
 }
-
-.toast.success { background: #27ae60; }
-.toast.info    { background: #3498db; }
-.toast.error   { background: #e74c3c; }
-
 </style>
 </head>
 
 <body>
 <div class="container">
 
-<header>
-<div class="brand-header">
-<img src="https://iili.io/fa8IvdG.jpg">
-<h1>Awwabim Laundry</h1>
+<div class="brand">
+  <img src="https://iili.io/fa8IvdG.jpg">
+  <h1>Awwabim Laundry</h1>
 </div>
 
-<nav class="main-nav">
-<a href="#" class="nav-item active" data-tab="order">Order Baru</a>
-<a href="#" class="nav-item" data-tab="aktif">Pesanan Aktif</a>
+<nav>
+  <a href="#" class="nav active" data-tab="order">Order Baru</a>
+  <a href="#" class="nav" data-tab="aktif">Pesanan Aktif</a>
 </nav>
-</header>
 
-<div id="order" class="tab-content active">
+<div id="order" class="tab active">
 <h2>Input Pesanan</h2>
 <form id="form">
-<input id="nama" placeholder="Nama pelanggan" required>
-<input id="wa" placeholder="WhatsApp" required>
-
-<div class="btn-group">
-<button class="btn btn-jemput" data-layanan="Jemput">JEMPUT</button>
-<button class="btn btn-antar" data-layanan="Antar">ANTAR</button>
-</div>
+  <input id="nama" placeholder="Nama pelanggan">
+  <input id="wa" placeholder="WhatsApp">
+  <div class="btn-group">
+    <button class="btn-jemput" type="button" onclick="simpanPesanan('Jemput')">JEMPUT</button>
+    <button class="btn-antar" type="button" onclick="simpanPesanan('Antar')">ANTAR</button>
+  </div>
 </form>
 </div>
 
-<div id="aktif" class="tab-content">
+<div id="aktif" class="tab">
 <h2>Pesanan Aktif</h2>
 <div class="table-wrapper">
 <table>
@@ -260,7 +192,6 @@ th {
 <th>Waktu</th>
 <th>Nama</th>
 <th>Layanan</th>
-<th>Status</th>
 <th>Aksi</th>
 </tr>
 </thead>
@@ -271,98 +202,70 @@ th {
 
 </div>
 
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
 <script>
-    function showToast(msg, type="info"){
-  const t = document.getElementById("toast");
-  t.className = `toast show ${type}`;
-  t.innerText = msg;
-
-  setTimeout(()=>{
-    t.className = "toast";
-  }, 2500);
-}
-
 /* NAV */
-document.querySelectorAll('.nav-item').forEach(n=>{
+document.querySelectorAll('.nav').forEach(n=>{
   n.onclick=e=>{
     e.preventDefault();
-    document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
     n.classList.add('active');
     document.getElementById(n.dataset.tab).classList.add('active');
-  };
+  }
 });
+
+/* TOAST */
+function showToast(msg,type){
+  var t=document.getElementById("toast");
+  t.className="toast show "+(type||"");
+  t.innerText=msg;
+  setTimeout(function(){ t.className="toast"; },2500);
+}
 
 /* FIREBASE */
 firebase.initializeApp({
   apiKey: "AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
   databaseURL: "https://awwabim-laundry-default-rtdb.firebaseio.com/"
 });
+var db=firebase.database().ref("Pesanan");
 
-const db = firebase.database().ref("Pesanan");
-
-/* SIMPAN PESANAN */
+/* SIMPAN */
 function simpanPesanan(layanan){
- function simpanPesanan(layanan){
   if(!nama.value || !wa.value){
-    showToast("Nama & WhatsApp wajib diisi", "error");
+    showToast("Nama & WhatsApp wajib diisi","error");
     return;
   }
-
   db.push({
-    nama: nama.value,
-    wa: wa.value,
-    layanan: layanan,
-    status: "MENUNGGU",
-    waktu: Date.now()
+    nama:nama.value,
+    wa:wa.value,
+    layanan:layanan,
+    waktu:Date.now()
   });
-
-  document.getElementById("form").reset();
-  showToast("Pesanan berhasil disimpan", "success");
+  form.reset();
+  showToast("Pesanan berhasil disimpan","success");
 }
-/* LIST PESANAN */
-db.on("value", snapshot=>{
-  list.innerHTML = "";
-  snapshot.forEach(child=>{
-    const d = child.val();
 
-    const waktu = d.waktu
-      ? new Date(d.waktu).toLocaleString("id-ID")
-      : "-";
-
-    list.innerHTML += `
-    <tr>
-      <td>${waktu}</td>
-      <td>${d.nama || "-"}</td>
-      <td>${d.layanan || "-"}</td>
-      <td>
-        <span class="status-badge status-menunggu">
-          ${d.status || "-"}
-        </span>
-      </td>
-      <td>
-        <div class="action-group">
-          <button class="btn-wa" onclick="window.open('https://wa.me/${d.wa}','_blank')">WA</button>
-          <button class="btn-next">Next</button>
-        </div>
-      </td>
-    </tr>`;
+/* LIST */
+db.on("value",function(s){
+  list.innerHTML="";
+  s.forEach(function(c){
+    var d=c.val();
+    list.innerHTML+=
+    "<tr>"+
+    "<td>"+new Date(d.waktu).toLocaleString("id-ID")+"</td>"+
+    "<td>"+d.nama+"</td>"+
+    "<td>"+d.layanan+"</td>"+
+    "<td>"+
+    "<div class='action-group'>"+
+    "<button class='btn-wa' onclick=\"window.open('https://wa.me/"+d.wa+"')\">WA</button>"+
+    "</div>"+
+    "</td>"+
+    "</tr>";
   });
 });
-
-/* BIND BUTTON */
-document.querySelector(".btn-jemput").onclick = e=>{
-  e.preventDefault();
-  simpanPesanan("Jemput");
-};
-
-document.querySelector(".btn-antar").onclick = e=>{
-  e.preventDefault();
-  simpanPesanan("Antar");
-};
 </script>
-    <div id="toast" class="toast"></div>
 </body>
 </html>
-
-
