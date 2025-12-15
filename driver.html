@@ -15,18 +15,35 @@ body{
 }
 .container{max-width:900px;margin:auto;padding:15px}
 .card{
- background:#fff;border-radius:14px;padding:15px;
- margin-bottom:15px;box-shadow:0 6px 12px rgba(0,0,0,.15)
+ background:#fff;border-radius:16px;padding:18px;
+ margin-bottom:15px;box-shadow:0 6px 14px rgba(0,0,0,.15)
 }
-.btn{width:100%;padding:14px;border:none;border-radius:10px;color:#fff;font-weight:bold;margin-top:10px}
+h3{margin-top:0}
+input{
+ width:100%;padding:18px;font-size:18px;
+ margin-bottom:14px;border-radius:12px;border:1px solid #ccc
+}
+.btn{
+ width:100%;padding:18px;font-size:18px;
+ border:none;border-radius:14px;color:#fff;font-weight:bold;margin-top:10px
+}
 .ok{background:#27ae60}
 .done{background:#3498db}
-.logout{background:#e74c3c;font-size:12px}
+.logout{background:#e74c3c;font-size:13px;padding:10px}
 .center{text-align:center;color:#777}
 .toast{
  position:fixed;bottom:20px;right:20px;
- background:#333;color:#fff;padding:12px 16px;border-radius:8px;display:none
+ background:#333;color:#fff;
+ padding:14px 18px;border-radius:10px;display:none
 }
+a.action{
+ display:block;margin-top:10px;
+ text-align:center;padding:12px;
+ border-radius:10px;font-weight:bold;
+ color:#fff;text-decoration:none
+}
+.wa{background:#25D366}
+.tel{background:#2980b9}
 </style>
 </head>
 
@@ -35,7 +52,7 @@ body{
 
 <div class="card" id="loginBox">
  <h3>Login Driver</h3>
- <input id="driverName" placeholder="Nama Driver">
+ <input id="driverName" placeholder="Nama Driver" autocomplete="name">
  <button class="btn ok" onclick="login()">MASUK</button>
 </div>
 
@@ -54,28 +71,28 @@ firebase.initializeApp({
  databaseURL:"https://awwabim-laundry-default-rtdb.firebaseio.com"
 });
 const db=firebase.database().ref("Pesanan");
-
 const notif=document.getElementById("notifSound");
 let lastOrder=0;
+
 function playNotif(){notif.currentTime=0;notif.play().catch(()=>{})}
 function toast(t){toastBox.innerText=t;toastBox.style.display="block";setTimeout(()=>toastBox.style.display="none",3000)}
 const toastBox=document.getElementById("toast");
 
 function login(){
- if(!driverName.value) return toast("Isi nama");
+ if(!driverName.value.trim()) return toast("Isi nama");
  localStorage.setItem("driver",driverName.value);
  loginBox.style.display="none";app.style.display="block";
 }
 if(localStorage.getItem("driver")){loginBox.style.display="none";app.style.display="block"}
 function logout(){localStorage.clear();location.reload()}
 
-db.on("value",s=>{
+db.on("value",snap=>{
  let aktif="",hist="",count=0;
 
- s.forEach(c=>{
-  let d=c.val();
+ snap.forEach(c=>{
+  const d=c.val();
 
-  if(d.status==="SELESAI"){
+  if(d.selesai){
    hist+=`
    <div class="card">
     <b>${d.layanan}</b><br>
@@ -87,14 +104,19 @@ db.on("value",s=>{
   }
 
   count++;
-  let tombol=d.status==="MENUNGGU_DRIVER"
+  const tombol = d.status==="MENUNGGU_DRIVER"
    ? `<button class="btn ok" onclick="siap('${c.key}','${d.layanan}')">OK SIAP</button>`
    : `<button class="btn done" onclick="selesai('${c.key}')">SELESAI</button>`;
 
   aktif+=`
   <div class="card">
    <h3>${d.layanan==="ANTAR"?"🛵 ANTAR":"🧺 JEMPUT"}</h3>
-   <b>${d.nama}</b>
+   <b>${d.nama}</b><br>
+   📞 ${d.wa}
+
+   <a class="action wa" href="https://wa.me/${d.wa}" target="_blank">💬 CHAT WHATSAPP</a>
+   <a class="action tel" href="tel:${d.wa}">📞 TELPON</a>
+
    ${tombol}
   </div>`;
  });
@@ -116,7 +138,7 @@ function siap(id,l){
 function selesai(id){
  db.child(id).update({
   status:"SELESAI",
-  selesai:Date.now()
+  selesai:firebase.database.ServerValue.TIMESTAMP
  });
  toast("Pesanan selesai");
 }
