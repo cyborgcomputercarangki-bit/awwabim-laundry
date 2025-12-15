@@ -20,11 +20,18 @@ table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{padding:6px;border-bottom:1px solid #ddd;text-align:center}
 th{background:#2c3e50;color:#fff}
 .badge{padding:4px 8px;border-radius:12px;color:#fff;font-size:12px}
-.SEDANG_DIANTAR{background:#3498db}
-.SEDANG_DIJEMPUT{background:#f39c12}
-.SEDANG_DICUCI{background:#e67e22}
-.SIAP_DIANTAR{background:#9b59b6}
-.SELESAI{background:#27ae60}
+
+.toast{
+ position:fixed;
+ bottom:20px;
+ right:20px;
+ background:#333;
+ color:#fff;
+ padding:12px 16px;
+ border-radius:8px;
+ display:none;
+ z-index:9999;
+}
 </style>
 </head>
 
@@ -38,7 +45,7 @@ th{background:#2c3e50;color:#fff}
 <datalist id="kontak"></datalist>
 
 <button class="btn-jemput" onclick="buat('JEMPUT')">🧺 JEMPUT</button>
-<button class="btn-antar" onclick="buat('ANTAR')">🚚 ANTAR</button>
+<button class="btn-antar" onclick="buat('ANTAR')">🛵 ANTAR</button>
 </div>
 
 <div class="card">
@@ -72,6 +79,8 @@ th{background:#2c3e50;color:#fff}
 
 </div>
 
+<div id="toast" class="toast"></div>
+
 <script>
 firebase.initializeApp({
  apiKey:"AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
@@ -79,10 +88,17 @@ firebase.initializeApp({
 });
 const db=firebase.database().ref("Pesanan");
 
+function toast(msg){
+ let t=document.getElementById("toast");
+ t.innerText=msg;
+ t.style.display="block";
+ setTimeout(()=>t.style.display="none",3000);
+}
+
 function buat(l){
  let n=nama.value.trim();
  let w=wa.value.replace(/\D/g,'');
- if(!n||!w) return alert("Lengkapi");
+ if(!n||!w) return toast("❌ Lengkapi data");
  if(w.startsWith("0")) w="62"+w.slice(1);
 
  db.push({
@@ -91,6 +107,8 @@ function buat(l){
   driver:"",
   waktu:Date.now()
  });
+
+ toast(`📤 Pesanan ${l} dikirim ke driver`);
  nama.value="";wa.value="";
 }
 
@@ -102,20 +120,20 @@ db.on("value",s=>{
 
   if(d.status==="SELESAI"){
    history.innerHTML+=`
-   <tr><td>${d.nama}</td><td>${d.driver}</td><td>${d.status}</td></tr>`;
+   <tr><td>${d.nama}</td><td>${d.driver}</td><td>SELESAI</td></tr>`;
    return;
   }
 
   let aksi="";
   if(d.status==="SEDANG_DICUCI"){
-   aksi=`<button class="btn-antar" onclick="antar('${c.key}')">ANTAR</button>`;
+   aksi=`<button class="btn-antar" onclick="antar('${c.key}')">🛵 ANTAR</button>`;
   }
 
   aktif.innerHTML+=`
   <tr>
    <td>${d.nama}</td>
    <td>${d.driver||"-"}</td>
-   <td><span class="badge ${d.status}">${d.status}</span></td>
+   <td>${d.status}</td>
    <td>${aksi}</td>
   </tr>`;
  });
@@ -123,6 +141,7 @@ db.on("value",s=>{
 
 function antar(id){
  db.child(id).update({status:"SIAP_DIANTAR"});
+ toast("🛵 Pesanan siap diantar");
 }
 </script>
 </body>
