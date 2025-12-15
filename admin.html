@@ -16,7 +16,7 @@
 body {
     margin: 0; padding: 20px 10px;
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #FF9966, #FF5E62); /* Warna lebih segar */
+    background: linear-gradient(135deg, #FF9966, #FF5E62);
     color: #333;
     min-height: 100vh;
 }
@@ -34,43 +34,32 @@ h3 { margin-top: 0; margin-bottom: 15px; color: #444; font-size: 1.2rem; }
 
 /* --- INPUTS --- */
 input {
-    width: 100%;
-    padding: 15px;
-    font-size: 16px;
-    border-radius: 12px;
-    border: 2px solid #eee;
-    margin-bottom: 15px;
-    background: #fafafa;
-    transition: 0.3s;
+    width: 100%; padding: 15px; font-size: 16px;
+    border-radius: 12px; border: 2px solid #eee; margin-bottom: 15px;
+    background: #fafafa; transition: 0.3s;
 }
 input:focus { border-color: #FF5E62; background: #fff; }
 
 /* --- BUTTONS --- */
 .btn {
-    width: 100%;
-    padding: 15px;
-    font-size: 16px;
-    border: none;
-    border-radius: 12px;
-    color: #fff;
-    font-weight: 600;
-    cursor: pointer;
+    width: 100%; padding: 15px; font-size: 16px;
+    border: none; border-radius: 12px;
+    color: #fff; font-weight: 600; cursor: pointer;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     transition: transform 0.2s;
 }
 .btn:active { transform: scale(0.98); }
 .btn-group { display: flex; gap: 10px; margin-top: 10px; }
 
-.antar { background: #3498db; }  /* Biru */
-.jemput { background: #27ae60; } /* Hijau */
-.logout { background: #e74c3c; margin-top: 20px; } /* Merah */
+.antar { background: #3498db; }
+.jemput { background: #27ae60; }
+.logout { background: #e74c3c; margin-top: 20px; }
 
-/* --- TABLE & LIST --- */
-.table-wrapper { overflow-x: auto; } /* Agar tabel bisa discroll horizontal di HP */
+/* --- TABLE --- */
+.table-wrapper { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; min-width: 400px; }
-th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
+th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: middle; }
 th { background: #f8f9fa; color: #555; font-weight: 600; }
-tr:last-child td { border-bottom: none; }
 
 /* --- STATUS BADGES --- */
 .badge {
@@ -81,11 +70,29 @@ tr:last-child td { border-bottom: none; }
 .SEDANG_DIANTAR { background: #3498db; }
 .SEDANG_DIJEMPUT { background: #27ae60; }
 .SELESAI { background: #95a5a6; }
+
+.driver-info {
+    font-size: 11px; color: #555; font-style: italic; display: block; margin-top: 4px;
+}
+
+/* --- TOAST NOTIFICATION --- */
+#toast-box {
+    position: fixed; top: 20px; right: 20px; z-index: 9999;
+}
+.toast {
+    background: #333; color: #fff; padding: 12px 20px;
+    border-radius: 8px; margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    animation: slideIn 0.3s, fadeOut 0.5s 2.5s forwards;
+    font-size: 14px;
+}
+@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes fadeOut { to { opacity: 0; } }
 </style>
 </head>
 
 <body>
-<div class="container">
+<div id="toast-box"></div> <div class="container">
 
     <div class="card" id="loginBox">
         <h3>🔐 Login Admin</h3>
@@ -111,7 +118,7 @@ tr:last-child td { border-bottom: none; }
             <div class="table-wrapper">
                 <table>
                     <thead>
-                        <tr><th>Nama</th><th>Layanan</th><th>Status</th></tr>
+                        <tr><th>Nama</th><th>Layanan</th><th>Status / Driver</th></tr>
                     </thead>
                     <tbody id="listAktif"></tbody>
                 </table>
@@ -123,7 +130,7 @@ tr:last-child td { border-bottom: none; }
             <div class="table-wrapper">
                 <table>
                     <thead>
-                        <tr><th>Nama</th><th>Layanan</th><th>Waktu</th></tr>
+                        <tr><th>Nama</th><th>Layanan (Driver)</th><th>Waktu</th></tr>
                     </thead>
                     <tbody id="listHistory"></tbody>
                 </table>
@@ -136,7 +143,7 @@ tr:last-child td { border-bottom: none; }
 </div>
 
 <script>
-// --- KONFIGURASI FIREBASE ---
+// --- CONFIG FIREBASE ---
 const firebaseConfig = {
     apiKey: "AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
     databaseURL: "https://awwabim-laundry-default-rtdb.firebaseio.com"
@@ -144,18 +151,29 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database().ref("Pesanan");
 
-// --- VARIABEL DOM ---
+// --- DOM ---
 const loginBox = document.getElementById("loginBox");
 const app = document.getElementById("app");
 const inpNama = document.getElementById("nama");
 const inpWa = document.getElementById("wa");
 const tAktif = document.getElementById("listAktif");
-const tHistory = document.getElementById("listHistory"); // ID BARU
+const tHistory = document.getElementById("listHistory");
 
-// --- FUNGSI LOGIN ---
+// --- UTILS ---
+function showToast(msg, color="#27ae60"){
+    const box = document.getElementById("toast-box");
+    const el = document.createElement("div");
+    el.className = "toast";
+    el.innerText = msg;
+    el.style.background = color;
+    box.appendChild(el);
+    setTimeout(()=> el.remove(), 3000);
+}
+
+// --- LOGIN ---
 function doLogin(){
     const n = document.getElementById("adminName").value.trim();
-    if(!n) return alert("Nama admin wajib diisi!");
+    if(!n) return showToast("Nama admin wajib diisi!", "#e74c3c");
     localStorage.setItem("admin", n);
     checkAuth();
 }
@@ -166,23 +184,19 @@ function checkAuth(){
         app.style.display = "block";
     }
 }
-checkAuth(); // Jalankan saat load
+checkAuth();
 
 function logout(){
-    if(confirm("Yakin ingin keluar?")){
-        localStorage.clear();
-        location.reload();
-    }
+    localStorage.clear();
+    location.reload();
 }
 
-// --- LOGIC APLIKASI ---
+// --- LOGIC ORDER ---
 function buatOrder(layanan){
     const nama = inpNama.value.trim();
-    let wa = inpWa.value.replace(/\D/g,''); // Hapus selain angka
+    let wa = inpWa.value.replace(/\D/g,'');
     
-    if(!nama || !wa) return alert("Data belum lengkap!");
-    
-    // Format WA ke 62
+    if(!nama || !wa) return showToast("Data belum lengkap!", "#e74c3c");
     if(wa.startsWith("0")) wa = "62" + wa.slice(1);
 
     db.push({
@@ -190,12 +204,13 @@ function buatOrder(layanan){
         wa: wa,
         layanan: layanan,
         status: "MENUNGGU_DRIVER",
+        driverName: "", // Awalnya kosong
         mulai: firebase.database.ServerValue.TIMESTAMP
     });
 
     inpNama.value = "";
     inpWa.value = "";
-    alert("Order berhasil dibuat!");
+    showToast(`Pesanan ${layanan} diteruskan ke driver!`, "#2980b9");
 }
 
 // --- REALTIME LISTENER ---
@@ -207,18 +222,20 @@ db.on("value", snap => {
     snap.forEach(child => {
         dataArray.push(child.val());
     });
-    
-    // Balik urutan array agar yang terbaru di atas
     dataArray.reverse();
 
     dataArray.forEach(d => {
+        const drv = d.driverName ? `<span class="driver-info">Oleh: ${d.driverName}</span>` : "";
+
         if(d.status === "SELESAI"){
-            // Tampilkan Jam Selesai
             const waktuSelesai = d.selesai ? new Date(d.selesai).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "-";
             const row = `
                 <tr>
                     <td>${d.nama}</td>
-                    <td><b>${d.layanan}</b></td>
+                    <td>
+                        <b>${d.layanan}</b>
+                        ${drv}
+                    </td>
                     <td>${waktuSelesai}</td>
                 </tr>`;
             tHistory.innerHTML += row;
@@ -227,7 +244,10 @@ db.on("value", snap => {
                 <tr>
                     <td>${d.nama}</td>
                     <td><b>${d.layanan}</b></td>
-                    <td><span class="badge ${d.status}">${d.status.replace("_"," ")}</span></td>
+                    <td>
+                        <span class="badge ${d.status}">${d.status.replace("_"," ")}</span>
+                        ${drv}
+                    </td>
                 </tr>`;
             tAktif.innerHTML += row;
         }
