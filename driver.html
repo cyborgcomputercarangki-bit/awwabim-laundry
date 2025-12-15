@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,127 +12,87 @@
 body{margin:0;font-family:Segoe UI;background:#f2f2f2}
 .container{max-width:1000px;margin:auto;padding:10px}
 .card{background:#fff;padding:12px;border-radius:10px;margin-bottom:10px}
-input,button{
- width:100%;
- padding:12px;
- margin-bottom:8px;
- border-radius:8px;
- border:1px solid #ccc
-}
+input,button{width:100%;padding:12px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc}
 button{border:none;font-weight:bold;color:#fff}
-.btn-login{background:#27ae60}
+.btn{background:#27ae60}
 .btn-selesai{background:#e74c3c}
 .btn-chat{background:#0984e3}
-
-.toast{
- position:fixed;
- bottom:20px;
- right:20px;
- background:#333;
- color:#fff;
- padding:12px 16px;
- border-radius:8px;
- display:none;
- z-index:9999;
-}
+.center{text-align:center;color:#999}
+.toast{position:fixed;bottom:20px;right:20px;background:#333;color:#fff;padding:12px;border-radius:8px;display:none}
 </style>
 </head>
 
 <body>
 <div class="container">
 
-<!-- LOGIN -->
 <div class="card" id="loginBox">
- <h3>Login Driver</h3>
- <input id="driverName" placeholder="Nama Driver">
- <button class="btn-login" onclick="loginDriver()">MASUK</button>
+<h3>Login Driver</h3>
+<input id="driverName" placeholder="Nama Driver">
+<button class="btn" onclick="login()">MASUK</button>
 </div>
 
-<!-- APP -->
-<div id="app" style="display:none"></div>
+<div id="app" style="display:none">
+<button class="btn-selesai" onclick="logout()">LOGOUT</button>
+<div id="list"></div>
+<div class="card">
+<h3>History</h3>
+<div id="history"></div>
+</div>
+</div>
 
 <div id="toast" class="toast"></div>
-
-</div>
 
 <script>
 firebase.initializeApp({
  apiKey:"AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
  databaseURL:"https://awwabim-laundry-default-rtdb.firebaseio.com"
 });
-const db = firebase.database().ref("Pesanan");
+const db=firebase.database().ref("Pesanan");
+let driver="";
 
-let driver = "";
-let lastCount = 0;
+function toast(t){const x=document.getElementById("toast");x.innerText=t;x.style.display="block";setTimeout(()=>x.style.display="none",3000);}
 
-function toast(msg){
- const t = document.getElementById("toast");
- t.innerText = msg;
- t.style.display = "block";
- setTimeout(()=>t.style.display="none",3000);
+function login(){
+ driver=driverName.value.trim();
+ if(!driver)return toast("Isi nama");
+ localStorage.setItem("driverLogin",driver);
+ loginBox.style.display="none";
+ app.style.display="block";
 }
 
-function loginDriver(){
- driver = document.getElementById("driverName").value.trim();
- if(!driver){
-  toast("❌ Nama driver wajib diisi");
-  return;
- }
- document.getElementById("loginBox").style.display = "none";
- document.getElementById("app").style.display = "block";
- toast("👋 Selamat bekerja, " + driver);
+function logout(){
+ localStorage.removeItem("driverLogin");
+ location.reload();
 }
 
-db.on("value", snap=>{
- let count = 0;
- let html = "";
- snap.forEach(c=>{
-  const d = c.val();
-  if(d.status === "SELESAI") return;
-  count++;
+if(localStorage.getItem("driverLogin")){
+ driver=localStorage.getItem("driverLogin");
+ loginBox.style.display="none";
+ app.style.display="block";
+}
 
-  let btn = "";
-  if(d.status !== "SEDANG_DICUCI"){
-   btn = `<button class="btn-selesai"
-           onclick="selesai('${c.key}','${d.layanan}')">
-           SELESAI
-          </button>`;
+db.on("value",s=>{
+ let aktif="", hist="";
+ s.forEach(c=>{
+  let d=c.val();
+  if(d.status==="SELESAI"){
+   hist+=`<div>${d.nama} - SELESAI</div>`;
+   return;
   }
-
-  html += `
-   <div class="card">
-    <b>${d.nama}</b><br>
-    🛵 ${d.layanan}<br>
-    Status: <b>${d.status}</b><br><br>
-    ${btn}
-    <a href="https://wa.me/${d.wa}" target="_blank">
-     <button class="btn-chat">CHAT</button>
-    </a>
-   </div>
-  `;
+  let btn=d.status!=="SEDANG_DICUCI"?`<button class="btn-selesai" onclick="selesai('${c.key}','${d.layanan}')">SELESAI</button>`:"";
+  aktif+=`<div class="card"><b>${d.nama}</b><br>${d.status}${btn}</div>`;
  });
-
- document.getElementById("app").innerHTML = html;
-
- if(count > lastCount){
-  toast("📥 Pesanan baru masuk");
- }
- lastCount = count;
+ list.innerHTML=aktif||`<div class="card center">☕ NGOPI DULU BRO<br>PESANAN BELUM ADA</div>`;
+ history.innerHTML=hist||"<div class='center'>Belum ada history</div>";
 });
 
-function selesai(id, layanan){
- if(layanan === "JEMPUT"){
-  db.child(id).update({
-   status: "SEDANG_DICUCI",
-   driver: driver
-  });
-  toast("🧺 Jemput selesai → Proses cuci");
- } else {
-  db.child(id).update({
-   status: "SELESAI",
-   driver: driver
-  });
-  toast("✅ Antar selesai");
+function selesai(id,l){
+ if(l==="JEMPUT"){
+  db.child(id).update({status:"SEDANG_DICUCI",driver});
+  toast("Masuk proses cuci");
+ }else{
+  db.child(id).update({status:"SELESAI",driver});
+  toast("Selesai");
  }
 }
 </script>
