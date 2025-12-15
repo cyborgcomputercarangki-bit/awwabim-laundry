@@ -3,29 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Driver</title>
+<title>Driver Laundry</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
 
 <style>
-body{font-family:Segoe UI;background:#dfe6e9}
-.card{background:#fff;padding:12px;border-radius:12px;margin:10px}
-button{width:100%;padding:10px;margin-top:5px;border:none;border-radius:6px;font-weight:bold}
-.ambil{background:#27ae60;color:#fff}
-.selesai{background:#e74c3c;color:#fff}
-.chat{background:#0984e3;color:#fff}
+body{margin:0;font-family:Segoe UI;background:#f2f2f2}
+.container{max-width:1000px;margin:auto;padding:10px}
+.card{background:#fff;padding:12px;border-radius:10px;margin-bottom:10px}
+input,button{width:100%;padding:12px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc}
+button{border:none;font-weight:bold;color:#fff}
+.ambil{background:#27ae60}
+.selesai{background:#e74c3c}
+.chat{background:#0984e3}
+.badge{padding:4px 8px;border-radius:12px;color:#fff;font-size:12px}
 </style>
 </head>
 
 <body>
+<div class="container">
 
-<div class="card">
+<div class="card" id="login">
+<h3>Login Driver</h3>
 <input id="driver" placeholder="Nama Driver">
-<button onclick="login()">LOGIN</button>
+<button class="ambil" onclick="login()">LOGIN</button>
 </div>
 
 <div id="app" style="display:none"></div>
+
+</div>
 
 <script>
 firebase.initializeApp({
@@ -38,7 +45,7 @@ let drv="";
 function login(){
  drv=driver.value.trim();
  if(!drv) return;
- document.querySelector(".card").style.display="none";
+ login.style.display="none";
  app.style.display="block";
 }
 
@@ -49,16 +56,15 @@ db.on("value",s=>{
   if(d.status==="SELESAI") return;
 
   let btn="";
-  if(d.status.includes("MENUNGGU")||d.status==="PROSES_ANTAR"){
-   btn+=`<button class="ambil" onclick="ambil('${c.key}')">AMBIL</button>`;
-  }
-  if(d.status==="PROSES_ANTAR"){
-   btn+=`<button class="selesai" onclick="selesai('${c.key}')">SELESAI</button>`;
+  if(d.status==="SEDANG_DIANTAR"||d.status==="SEDANG_DIJEMPUT"||d.status==="SIAP_DIANTAR"){
+   btn+=`<button class="selesai" onclick="selesai('${c.key}','${d.layanan}')">SELESAI</button>`;
   }
 
   app.innerHTML+=`
   <div class="card">
-   <b>${d.nama}</b><br>${d.layanan}
+   <b>${d.nama}</b><br>
+   ${d.layanan}<br>
+   <span class="badge">${d.status}</span>
    ${btn}
    <a href="https://wa.me/${d.wa}" target="_blank">
     <button class="chat">CHAT</button>
@@ -67,11 +73,12 @@ db.on("value",s=>{
  });
 });
 
-function ambil(id){
- db.child(id).update({driver:drv,status:"PROSES_CUCI"});
-}
-function selesai(id){
- db.child(id).update({status:"SELESAI"});
+function selesai(id,layanan){
+ if(layanan==="JEMPUT"){
+  db.child(id).update({status:"SEDANG_DICUCI",driver:drv});
+ }else{
+  db.child(id).update({status:"SELESAI",driver:drv});
+ }
 }
 </script>
 </body>
