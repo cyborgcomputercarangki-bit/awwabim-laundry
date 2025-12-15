@@ -9,137 +9,108 @@
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
 
 <style>
-body{
- margin:0;
- font-family:Segoe UI,Arial;
- background:linear-gradient(135deg,#dff9fb,#c7ecee);
-}
-.container{
- max-width:800px;
- margin:auto;
- background:#fff;
- padding:15px;
- border-radius:12px;
-}
-
-.header{
- text-align:center;
- font-size:1.3em;
- font-weight:bold;
- margin-bottom:10px;
-}
-
-input{
- width:100%;
- padding:10px;
- margin-bottom:10px;
- border-radius:6px;
- border:1px solid #ccc;
-}
-
-table{
- width:100%;
- border-collapse:collapse;
-}
-th,td{
- padding:8px;
- border-bottom:1px solid #eee;
- font-size:.9em;
-}
-th{
- background:#0984e3;
- color:#fff;
-}
-
-.btn{
- padding:8px 12px;
- border:none;
- border-radius:5px;
- color:#fff;
- background:#27ae60;
- font-weight:bold;
-}
-.empty{
- text-align:center;
- padding:15px;
- color:#777;
-}
+body{font-family:Segoe UI;background:#dfe6e9;margin:0}
+.container{max-width:800px;margin:auto;background:#fff;padding:15px;border-radius:10px}
+input,button{padding:10px;border-radius:6px;border:1px solid #ccc;width:100%}
+button{background:#27ae60;color:#fff;font-weight:bold;border:none}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{padding:8px;border-bottom:1px solid #eee}
+th{background:#0984e3;color:#fff}
 </style>
 </head>
 
 <body>
 <div class="container">
 
-<div class="header">🚚 DRIVER AWWABIM LAUNDRY</div>
+<h3>🚚 DRIVER AWWABIM LAUNDRY</h3>
 
-<input id="driver" placeholder="Masukkan nama driver">
+<div id="login">
+ <input id="namaDriver" placeholder="Nama driver">
+ <button onclick="login()">MASUK</button>
+</div>
 
-<table>
-<thead>
-<tr>
- <th>Waktu</th>
- <th>Pelanggan</th>
- <th>Layanan</th>
- <th>Aksi</th>
-</tr>
-</thead>
-<tbody id="list"></tbody>
-</table>
+<div id="app" style="display:none">
+ <p>Login sebagai: <b id="driverName"></b></p>
+ <button onclick="logout()" style="background:#e74c3c">LOGOUT</button>
+
+ <table>
+ <thead>
+ <tr><th>Pelanggan</th><th>Layanan</th><th>Aksi</th></tr>
+ </thead>
+ <tbody id="list"></tbody>
+ </table>
+</div>
 
 </div>
 
 <script>
-/* FIREBASE */
 firebase.initializeApp({
  apiKey:"AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
  databaseURL:"https://awwabim-laundry-default-rtdb.firebaseio.com/"
 });
+
 const db = firebase.database().ref("pesanan");
+const notif = firebase.database().ref("notifikasi");
 
-const driverInput = document.getElementById("driver");
-const list = document.getElementById("list");
+let driver = localStorage.getItem("driver");
 
-driverInput.addEventListener("input", loadData);
-
-/* LOAD DATA */
-function loadData(){
- let namaDriver = driverInput.value.trim().toLowerCase();
- if(!namaDriver){
-  list.innerHTML="<tr><td colspan=4 class='empty'>Masukkan nama driver</td></tr>";
-  return;
- }
-
- db.on("value", snap=>{
-  let html="";
-  snap.forEach(d=>{
-   let v=d.val();
-   if(
-    v.status==="MENUNGGU" &&
-    v.driver.toLowerCase() === namaDriver
-   ){
-    let jam=new Date(v.waktu).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"});
-    html+=`
-    <tr>
-     <td>${jam}</td>
-     <td>${v.nama}</td>
-     <td>${v.layanan}</td>
-     <td>
-      <button class="btn" onclick="selesai('${d.key}')">SELESAI</button>
-     </td>
-    </tr>`;
-   }
-  });
-
-  list.innerHTML = html || "<tr><td colspan=4 class='empty'>Tidak ada pesanan</td></tr>";
- });
+/* LOGIN */
+function login(){
+ let nama=document.getElementById("namaDriver").value;
+ if(!nama) return alert("Nama wajib diisi");
+ localStorage.setItem("driver",nama);
+ location.reload();
 }
+
+/* LOGOUT */
+function logout(){
+ localStorage.removeItem("driver");
+ location.reload();
+}
+
+if(driver){
+ document.getElementById("login").style.display="none";
+ document.getElementById("app").style.display="block";
+ document.getElementById("driverName").innerText=driver;
+}
+
+/* LIST PESANAN */
+db.on("value", snap=>{
+ let html="";
+ snap.forEach(d=>{
+  let v=d.val();
+  if(v.status==="MENUNGGU" && v.driver===driver){
+   html+=`
+   <tr>
+    <td>${v.nama}</td>
+    <td>${v.layanan}</td>
+    <td><button onclick="selesai('${d.key}')">SELESAI</button></td>
+   </tr>`;
+  }
+ });
+ list.innerHTML=html||"<tr><td colspan=3>Tidak ada pesanan</td></tr>";
+});
 
 /* SELESAI */
 function selesai(id){
- if(confirm("Yakin pesanan selesai?")){
-  db.child(id).update({status:"SELESAI"});
- }
+ db.child(id).update({status:"SELESAI"});
+ notif.push({
+  dari:driver,
+  ke:"ADMIN",
+  pesan:"Pesanan sudah selesai",
+  waktu:Date.now(),
+  dibaca:false
+ });
 }
+
+/* NOTIF DARI ADMIN */
+notif.on("child_added", snap=>{
+ let n=snap.val();
+ if(n.ke===driver && !n.dibaca){
+  alert("🔔 "+n.pesan);
+  snap.ref.update({dibaca:true});
+ }
+});
 </script>
 
 </body>
