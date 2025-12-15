@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,16 +9,51 @@
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
 
 <style>
-body{margin:0;font-family:Segoe UI;background:#f2f2f2}
-.container{max-width:1000px;margin:auto;padding:10px}
-.card{background:#fff;padding:12px;border-radius:10px;margin-bottom:10px}
-input,button{width:100%;padding:12px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc}
-button{border:none;font-weight:bold;color:#fff}
-.btn{background:#27ae60}
-.btn-selesai{background:#e74c3c}
-.btn-chat{background:#0984e3}
-.center{text-align:center;color:#999}
-.toast{position:fixed;bottom:20px;right:20px;background:#333;color:#fff;padding:12px;border-radius:8px;display:none}
+body{
+ margin:0;
+ font-family:Segoe UI,Arial;
+ background:linear-gradient(135deg,#fceabb,#f8b500);
+}
+.container{
+ max-width:900px;
+ margin:auto;
+ padding:15px;
+}
+.card{
+ background:#fff;
+ border-radius:12px;
+ padding:15px;
+ margin-bottom:12px;
+}
+input,button{
+ width:100%;
+ padding:12px;
+ margin-bottom:10px;
+ border-radius:8px;
+ border:1px solid #ccc;
+}
+button{
+ border:none;
+ font-weight:bold;
+ color:#fff;
+}
+.btn-selesai{background:#27ae60}
+.logout{
+ background:#e74c3c;
+ font-size:12px;
+ padding:8px;
+}
+.center{text-align:center;color:#888}
+.toast{
+ position:fixed;
+ bottom:20px;
+ right:20px;
+ background:#333;
+ color:#fff;
+ padding:12px 16px;
+ border-radius:8px;
+ display:none;
+}
 </style>
 </head>
 
@@ -26,18 +61,14 @@ button{border:none;font-weight:bold;color:#fff}
 <div class="container">
 
 <div class="card" id="loginBox">
-<h3>Login Driver</h3>
-<input id="driverName" placeholder="Nama Driver">
-<button class="btn" onclick="login()">MASUK</button>
+ <h3>Login Driver</h3>
+ <input id="driverName" placeholder="Nama Driver">
+ <button class="btn-selesai" onclick="login()">MASUK</button>
 </div>
 
 <div id="app" style="display:none">
-<button class="btn-selesai" onclick="logout()">LOGOUT</button>
-<div id="list"></div>
-<div class="card">
-<h3>History</h3>
-<div id="history"></div>
-</div>
+ <div id="list"></div>
+ <button class="logout" onclick="logout()">LOGOUT</button>
 </div>
 
 <div id="toast" class="toast"></div>
@@ -48,14 +79,18 @@ firebase.initializeApp({
  databaseURL:"https://awwabim-laundry-default-rtdb.firebaseio.com"
 });
 const db=firebase.database().ref("Pesanan");
-let driver="";
 
-function toast(t){const x=document.getElementById("toast");x.innerText=t;x.style.display="block";setTimeout(()=>x.style.display="none",3000);}
+function toast(t){
+ const x=document.getElementById("toast");
+ x.innerText=t;
+ x.style.display="block";
+ setTimeout(()=>x.style.display="none",3000);
+}
 
 function login(){
- driver=driverName.value.trim();
- if(!driver)return toast("Isi nama");
- localStorage.setItem("driverLogin",driver);
+ const n=driverName.value.trim();
+ if(!n) return toast("Isi nama");
+ localStorage.setItem("driverLogin",n);
  loginBox.style.display="none";
  app.style.display="block";
 }
@@ -66,34 +101,28 @@ function logout(){
 }
 
 if(localStorage.getItem("driverLogin")){
- driver=localStorage.getItem("driverLogin");
  loginBox.style.display="none";
  app.style.display="block";
 }
 
 db.on("value",s=>{
- let aktif="", hist="";
+ let html="";
  s.forEach(c=>{
   let d=c.val();
-  if(d.status==="SELESAI"){
-   hist+=`<div>${d.nama} - SELESAI</div>`;
-   return;
-  }
-  let btn=d.status!=="SEDANG_DICUCI"?`<button class="btn-selesai" onclick="selesai('${c.key}','${d.layanan}')">SELESAI</button>`:"";
-  aktif+=`<div class="card"><b>${d.nama}</b><br>${d.status}${btn}</div>`;
+  if(d.status==="SELESAI") return;
+  html+=`
+  <div class="card">
+   <b>${d.nama}</b><br>
+   ${d.layanan}<br><br>
+   <button class="btn-selesai" onclick="selesai('${c.key}')">SELESAI</button>
+  </div>`;
  });
- list.innerHTML=aktif||`<div class="card center">☕ NGOPI DULU BRO<br>PESANAN BELUM ADA</div>`;
- history.innerHTML=hist||"<div class='center'>Belum ada history</div>";
+ list.innerHTML=html || `<div class="card center">☕ NGOPI DULU BRO<br>PESANAN BELUM ADA</div>`;
 });
 
-function selesai(id,l){
- if(l==="JEMPUT"){
-  db.child(id).update({status:"SEDANG_DICUCI",driver});
-  toast("Masuk proses cuci");
- }else{
-  db.child(id).update({status:"SELESAI",driver});
-  toast("Selesai");
- }
+function selesai(id){
+ db.child(id).update({status:"SELESAI"});
+ toast("Pesanan selesai");
 }
 </script>
 </body>
