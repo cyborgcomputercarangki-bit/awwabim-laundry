@@ -14,10 +14,19 @@ body{margin:0;font-family:Segoe UI;background:#f2f2f2}
 .card{background:#fff;padding:12px;border-radius:10px;margin-bottom:10px}
 input,button{width:100%;padding:12px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc}
 button{border:none;font-weight:bold;color:#fff}
-.ambil{background:#27ae60}
 .selesai{background:#e74c3c}
 .chat{background:#0984e3}
-.badge{padding:4px 8px;border-radius:12px;color:#fff;font-size:12px}
+.toast{
+ position:fixed;
+ bottom:20px;
+ right:20px;
+ background:#333;
+ color:#fff;
+ padding:12px 16px;
+ border-radius:8px;
+ display:none;
+ z-index:9999;
+}
 </style>
 </head>
 
@@ -27,10 +36,11 @@ button{border:none;font-weight:bold;color:#fff}
 <div class="card" id="login">
 <h3>Login Driver</h3>
 <input id="driver" placeholder="Nama Driver">
-<button class="ambil" onclick="login()">LOGIN</button>
+<button style="background:#27ae60" onclick="login()">LOGIN</button>
 </div>
 
 <div id="app" style="display:none"></div>
+<div id="toast" class="toast"></div>
 
 </div>
 
@@ -40,44 +50,61 @@ firebase.initializeApp({
  databaseURL:"https://awwabim-laundry-default-rtdb.firebaseio.com"
 });
 const db=firebase.database().ref("Pesanan");
-let drv="";
+let drv="", lastCount=0;
+
+function toast(msg){
+ let t=document.getElementById("toast");
+ t.innerText=msg;
+ t.style.display="block";
+ setTimeout(()=>t.style.display="none",3000);
+}
 
 function login(){
  drv=driver.value.trim();
  if(!drv) return;
  login.style.display="none";
  app.style.display="block";
+ toast("👋 Login berhasil");
 }
 
 db.on("value",s=>{
+ let count=0;
  app.innerHTML="";
  s.forEach(c=>{
   let d=c.val();
   if(d.status==="SELESAI") return;
+  count++;
 
   let btn="";
-  if(d.status==="SEDANG_DIANTAR"||d.status==="SEDANG_DIJEMPUT"||d.status==="SIAP_DIANTAR"){
-   btn+=`<button class="selesai" onclick="selesai('${c.key}','${d.layanan}')">SELESAI</button>`;
+  if(d.status!=="SEDANG_DICUCI"){
+   btn=`<button class="selesai" onclick="selesai('${c.key}','${d.layanan}')">SELESAI</button>`;
   }
 
   app.innerHTML+=`
   <div class="card">
    <b>${d.nama}</b><br>
-   ${d.layanan}<br>
-   <span class="badge">${d.status}</span>
+   🛵 ${d.layanan}<br>
+   Status: ${d.status}
    ${btn}
    <a href="https://wa.me/${d.wa}" target="_blank">
     <button class="chat">CHAT</button>
    </a>
   </div>`;
  });
+
+ if(count>lastCount){
+  toast("📥 Pesanan baru masuk");
+ }
+ lastCount=count;
 });
 
 function selesai(id,layanan){
  if(layanan==="JEMPUT"){
   db.child(id).update({status:"SEDANG_DICUCI",driver:drv});
+  toast("🧺 Jemput selesai, masuk proses cuci");
  }else{
   db.child(id).update({status:"SELESAI",driver:drv});
+  toast("✅ Antar selesai");
  }
 }
 </script>
