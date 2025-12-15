@@ -14,7 +14,7 @@
 /* --- BASE STYLE --- */
 * { box-sizing: border-box; outline: none; }
 body {
-    margin: 0; padding: 0; /* Padding dihandle container */
+    margin: 0; padding: 0; 
     font-family: 'Poppins', sans-serif;
     background: linear-gradient(135deg, #FF9966, #FF5E62);
     color: #333;
@@ -30,9 +30,7 @@ body {
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     z-index: 100;
 }
-/* PERUBAHAN DI SINI */
 .brand { font-weight: 700; color: #FF5E62; font-size: 18px; }
-/* END PERUBAHAN */
 .user-profile { display: flex; align-items: center; gap: 10px; }
 .user-name { font-size: 14px; font-weight: 600; text-align: right; }
 .user-role { font-size: 11px; color: #888; display: block; }
@@ -69,7 +67,7 @@ input:focus { border-color: #FF5E62; background: #fff; }
 .jemput { background: #27ae60; }
 .logout { background: #e74c3c; margin-top: 20px; }
 .pilih-kontak { 
-    background: #25D366; 
+    background: #555; /* Ubah warna agar berbeda dari hijau WA yang berkonotasi langsung chat */
     padding: 10px; margin-bottom: 15px;
     font-size: 14px;
 }
@@ -125,7 +123,8 @@ th { background: #f8f9fa; color: #555; font-weight: 600; }
 <div id="toast-box"></div> 
 
 <div id="headerBar" class="header-bar" style="display:none">
-    <div class="brand">ADMIN AWWABIM</div> <div class="user-profile">
+    <div class="brand">ADMIN AWWABIM</div>
+    <div class="user-profile">
         <div>
             <div class="user-name" id="dispName">Admin</div>
             <span class="user-role">Administrator</span>
@@ -150,7 +149,7 @@ th { background: #f8f9fa; color: #555; font-weight: 600; }
             <input id="wa" placeholder="WhatsApp (cth: 0812xxx)" type="tel" inputmode="numeric" autocomplete="tel"> 
             
             <button class="btn pilih-kontak" onclick="pilihKontak()">
-                📞 PILIH KONTAK DARI WA
+                💾 SALIN/TEMPEL (Copy/Paste) NOMOR HP
             </button>
             
             <div class="btn-group">
@@ -253,10 +252,9 @@ function logout(){
 
 // --- ORDER LOGIC ---
 function pilihKontak(){
-    const pesanAwal = encodeURIComponent("Halo, saya admin Laundry. Mohon kirimkan nomor telepon yang ingin Anda gunakan untuk pemesanan.");
-    window.open(`https://wa.me/?text=${pesanAwal}`, '_blank');
-
-    showToast("Pilih kontak di WhatsApp, lalu salin nomornya!", "#25D366");
+    // Menggunakan trik sederhana untuk memicu admin membuka Kontak HP secara manual
+    // dan mengingatkan admin untuk menggunakan copy-paste
+    showToast("Instruksi: Buka daftar Kontak HP Anda, salin (copy) nomor pelanggan, lalu tempel (paste) di kolom WhatsApp di atas!", "#555");
 }
 
 function buatOrder(layanan){
@@ -318,4 +316,3 @@ db.on("value", snap => {
 </script>
 </body>
 </html>
-
