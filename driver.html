@@ -7,29 +7,42 @@
 
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
 /* --- BASE STYLE --- */
 * { box-sizing: border-box; outline: none; }
 body {
-    margin: 0; padding: 20px 10px;
+    margin: 0; padding: 0;
     font-family: 'Poppins', sans-serif;
     background: linear-gradient(135deg, #11998e, #38ef7d);
     color: #333;
     min-height: 100vh;
 }
-.container { max-width: 600px; margin: auto; }
+.container { max-width: 600px; margin: auto; padding: 15px; padding-top: 80px; }
 
-/* --- CARD STYLE --- */
+/* --- HEADER PROFIL (Fixed Top) --- */
+.header-bar {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: #fff; padding: 10px 20px;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 100;
+}
+.brand { font-weight: 700; color: #11998e; font-size: 18px; }
+.user-profile { display: flex; align-items: center; gap: 10px; }
+.user-name { font-size: 14px; font-weight: 600; text-align: right; }
+.user-role { font-size: 11px; color: #888; display: block; }
+.avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 2px solid #11998e;
+}
+
+/* --- COMPONENTS --- */
 .card {
-    background: #fff;
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    position: relative;
-    overflow: hidden;
+    background: #fff; border-radius: 16px; padding: 20px;
+    margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    position: relative; overflow: hidden;
 }
 .card.wait { border-left: 6px solid #f1c40f; }
 .card.process { border-left: 6px solid #3498db; }
@@ -54,7 +67,7 @@ input {
 .btn-login { background: #27ae60; }
 .btn-logout { background: #e74c3c; margin-top: 30px; font-size: 14px; }
 
-/* Grid Tombol WA/Telp */
+/* Grid Action */
 .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
 .wa { background: #25D366; }
 .tel { background: #2980b9; }
@@ -66,39 +79,52 @@ input {
 .siap { background: #f39c12; color: #fff; }
 .selesai { background: #27ae60; color: #fff; }
 
-/* --- EMPTY STATE (TENGAH LAYAR & TERANG) --- */
+/* --- EMPTY STATE (CENTER & BRIGHT) --- */
+.empty-wrapper {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center; pointer-events: none;
+}
 .empty-state {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    min-height: 50vh; /* Setengah tinggi layar */
-    color: #fff;
-    text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    text-align: center; color: #fff;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    margin-top: 100px; /* Spacer dari header */
 }
-.empty-icon { font-size: 60px; display: block; margin-bottom: 15px; }
-.empty-text { font-size: 20px; font-weight: bold; color: #fff; margin-bottom: 5px; }
-.empty-sub { font-size: 14px; color: #f0f0f0; }
+.empty-icon { font-size: 70px; display: block; margin-bottom: 15px; animation: float 3s ease-in-out infinite; }
+.empty-text { font-size: 22px; font-weight: 700; margin-bottom: 5px; }
+.empty-sub { font-size: 15px; opacity: 0.9; }
 
-/* --- TOAST NOTIFICATION --- */
-#toast-box {
-    position: fixed; top: 20px; right: 20px; z-index: 9999;
-}
+@keyframes float { 0%{transform: translateY(0px);} 50%{transform: translateY(-10px);} 100%{transform: translateY(0px);} }
+
+/* --- TOAST --- */
+#toast-box { position: fixed; top: 80px; right: 20px; z-index: 9999; }
 .toast {
     background: #333; color: #fff; padding: 12px 20px;
-    border-radius: 8px; margin-bottom: 10px;
+    border-radius: 8px; margin-bottom: 10px; font-size: 14px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     animation: slideIn 0.3s, fadeOut 0.5s 2.5s forwards;
-    font-size: 14px;
 }
 @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
 @keyframes fadeOut { to { opacity: 0; } }
+
+#loginBox { margin-top: 50px; }
 </style>
 </head>
 
 <body>
-<div id="toast-box"></div> <div class="container">
+<div id="toast-box"></div>
+
+<div id="headerBar" class="header-bar" style="display:none">
+    <div class="brand">DRIVER APP</div>
+    <div class="user-profile">
+        <div>
+            <div class="user-name" id="dispName">Driver</div>
+            <span class="user-role">Mitra Awwabim</span>
+        </div>
+        <img id="dispImg" src="" class="avatar" alt="User">
+    </div>
+</div>
+
+<div class="container">
 
     <div class="card" id="loginBox">
         <h3>🛵 Login Driver</h3>
@@ -107,11 +133,12 @@ input {
     </div>
 
     <div id="app" style="display:none">
+        
         <div id="listAktif"></div>
         
         <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.5); margin: 30px 0;">
         
-        <h4 style="color:#fff; text-align:center; margin-bottom:15px; opacity:0.9">RIWAYAT TERAKHIR</h4>
+        <h4 style="color:#fff; text-align:center; margin-bottom:15px; text-shadow:0 1px 2px rgba(0,0,0,0.2)">RIWAYAT TERAKHIR</h4>
         <div id="listHistory"></div>
 
         <button class="btn btn-logout" onclick="logout()">LOGOUT</button>
@@ -120,7 +147,7 @@ input {
 </div>
 
 <script>
-// --- CONFIG ---
+// --- FIREBASE ---
 const firebaseConfig = {
     apiKey: "AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
     databaseURL: "https://awwabim-laundry-default-rtdb.firebaseio.com"
@@ -131,10 +158,13 @@ const db = firebase.database().ref("Pesanan");
 // --- DOM ---
 const loginBox = document.getElementById("loginBox");
 const app = document.getElementById("app");
+const headerBar = document.getElementById("headerBar");
+const dispName = document.getElementById("dispName");
+const dispImg = document.getElementById("dispImg");
 const divAktif = document.getElementById("listAktif");
 const divHistory = document.getElementById("listHistory");
 
-// --- UTILS ---
+// --- TOAST ---
 function showToast(msg, color="#27ae60"){
     const box = document.getElementById("toast-box");
     const el = document.createElement("div");
@@ -145,7 +175,7 @@ function showToast(msg, color="#27ae60"){
     setTimeout(()=> el.remove(), 3000);
 }
 
-// --- LOGIN/LOGOUT ---
+// --- LOGIN ---
 function doLogin(){
     const n = document.getElementById("driverName").value.trim();
     if(!n) return showToast("Nama Driver wajib diisi!", "#e74c3c");
@@ -154,9 +184,15 @@ function doLogin(){
 }
 
 function checkAuth(){
-    if(localStorage.getItem("driver")){
+    const user = localStorage.getItem("driver");
+    if(user){
         loginBox.style.display = "none";
         app.style.display = "block";
+        headerBar.style.display = "flex";
+        
+        // Header Info
+        dispName.innerText = user;
+        dispImg.src = `https://ui-avatars.com/api/?name=${user}&background=random&color=fff`;
     }
 }
 checkAuth();
@@ -181,32 +217,28 @@ db.on("value", snap => {
 
     dataArray.forEach(d => {
         const time = new Date(d.mulai).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        const driverYgAmbil = d.driverName ? `(${d.driverName})` : "";
+        const drvName = d.driverName ? `(${d.driverName})` : "";
         
         if(d.status === "SELESAI"){
-            // TAMPILAN HISTORY
             const timeEnd = d.selesai ? new Date(d.selesai).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "-";
             divHistory.innerHTML += `
             <div class="card done">
                 <div style="display:flex; justify-content:space-between; align-items:center">
-                    <span style="font-weight:bold; color:#7f8c8d">${d.layanan} ${driverYgAmbil}</span>
+                    <span style="font-weight:bold; color:#7f8c8d">${d.layanan} ${drvName}</span>
                     <small style="color:#95a5a6">${time} - ${timeEnd}</small>
                 </div>
                 <div class="big-name" style="color:#555">${d.nama}</div>
                 <div style="font-size:12px; color:#27ae60; margin-top:5px">✅ SELESAI</div>
             </div>`;
         } else {
-            // TAMPILAN AKTIF
             countAktif++;
             
             let btnMain = "";
             let statusClass = "wait";
             
             if(d.status === "MENUNGGU_DRIVER"){
-                // Tombol Ambil Order
                 btnMain = `<button class="btn main-action siap" onclick="ambilOrder('${d.key}','${d.layanan}')">🚀 AMBIL ORDER</button>`;
             } else {
-                // Tombol Selesai
                 statusClass = "process";
                 btnMain = `<button class="btn main-action selesai" onclick="selesai('${d.key}')">✅ SELESAIKAN</button>`;
             }
@@ -221,7 +253,7 @@ db.on("value", snap => {
                 </h3>
                 <div class="big-name">${d.nama}</div>
                 <p>WhatsApp: ${d.wa}</p>
-                <p style="font-size:12px; color:#666">Status: ${d.status.replace("_"," ")} ${driverYgAmbil}</p>
+                <p style="font-size:12px; color:#666">Status: ${d.status.replace("_"," ")} ${drvName}</p>
                 
                 <div class="action-grid">
                     <a class="btn wa" href="https://wa.me/${d.wa}" target="_blank">💬 CHAT</a>
@@ -232,7 +264,7 @@ db.on("value", snap => {
         }
     });
 
-    // EMPTY STATE (Tampilan Tengah & Terang)
+    // EMPTY STATE (CENTER & BRIGHT)
     if(countAktif === 0){
         divAktif.innerHTML = `
         <div class="empty-state">
@@ -243,7 +275,7 @@ db.on("value", snap => {
     }
     
     if(!divHistory.innerHTML){
-        divHistory.innerHTML = `<div style="text-align:center; color:#fff; opacity:0.7">Belum ada riwayat</div>`;
+        divHistory.innerHTML = `<div style="text-align:center; color:#fff; opacity:0.7; font-size:12px">Belum ada riwayat</div>`;
     }
 });
 
@@ -251,7 +283,6 @@ function ambilOrder(key, layanan){
     const drvName = localStorage.getItem("driver");
     const newStatus = layanan === "ANTAR" ? "SEDANG_DIANTAR" : "SEDANG_DIJEMPUT";
     
-    // Update ke Firebase (Simpan Nama Driver)
     db.child(key).update({ 
         status: newStatus,
         driverName: drvName
@@ -261,7 +292,6 @@ function ambilOrder(key, layanan){
 }
 
 function selesai(key){
-    // Langsung eksekusi tanpa confirm
     db.child(key).update({
         status: "SELESAI",
         selesai: firebase.database.ServerValue.TIMESTAMP
