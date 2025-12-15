@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Driver Laundry</title>
+<title>DRIVER AWWABIM</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
@@ -21,29 +21,25 @@ body{
 }
 .card{
  background:#fff;
- border-radius:12px;
+ border-radius:14px;
  padding:15px;
- margin-bottom:12px;
+ margin-bottom:15px;
+ box-shadow:0 6px 12px rgba(0,0,0,.15);
 }
-input,button{
+.btn{
  width:100%;
- padding:12px;
- margin-bottom:10px;
- border-radius:8px;
- border:1px solid #ccc;
-}
-button{
+ padding:14px;
  border:none;
- font-weight:bold;
+ border-radius:10px;
  color:#fff;
+ font-size:16px;
+ font-weight:bold;
+ margin-top:10px;
 }
-.btn-selesai{background:#27ae60}
-.logout{
- background:#e74c3c;
- font-size:12px;
- padding:8px;
-}
-.center{text-align:center;color:#888}
+.ok{background:#27ae60}
+.done{background:#3498db}
+.logout{background:#e74c3c;font-size:12px}
+.center{text-align:center;color:#777}
 .toast{
  position:fixed;
  bottom:20px;
@@ -63,12 +59,12 @@ button{
 <div class="card" id="loginBox">
  <h3>Login Driver</h3>
  <input id="driverName" placeholder="Nama Driver">
- <button class="btn-selesai" onclick="login()">MASUK</button>
+ <button class="btn ok" onclick="login()">MASUK</button>
 </div>
 
 <div id="app" style="display:none">
  <div id="list"></div>
- <button class="logout" onclick="logout()">LOGOUT</button>
+ <button class="btn logout" onclick="logout()">LOGOUT</button>
 </div>
 
 <div id="toast" class="toast"></div>
@@ -86,24 +82,15 @@ function toast(t){
  x.style.display="block";
  setTimeout(()=>x.style.display="none",3000);
 }
-
 function login(){
- const n=driverName.value.trim();
- if(!n) return toast("Isi nama");
- localStorage.setItem("driverLogin",n);
- loginBox.style.display="none";
- app.style.display="block";
+ if(!driverName.value) return toast("Isi nama");
+ localStorage.setItem("driver",driverName.value);
+ loginBox.style.display="none"; app.style.display="block";
 }
-
-function logout(){
- localStorage.removeItem("driverLogin");
- location.reload();
+if(localStorage.getItem("driver")){
+ loginBox.style.display="none"; app.style.display="block";
 }
-
-if(localStorage.getItem("driverLogin")){
- loginBox.style.display="none";
- app.style.display="block";
-}
+function logout(){localStorage.clear();location.reload();}
 
 db.on("value",s=>{
  let html="";
@@ -112,16 +99,21 @@ db.on("value",s=>{
   if(d.status==="SELESAI") return;
   html+=`
   <div class="card">
-   <b>${d.nama}</b><br>
-   ${d.layanan}<br><br>
-   <button class="btn-selesai" onclick="selesai('${c.key}')">SELESAI</button>
+   <h3>${d.layanan==="ANTAR"?"🛵 ANTAR":"🧺 JEMPUT"}</h3>
+   <b>${d.nama}</b><br><br>
+   <button class="btn ok" onclick="siap('${c.key}','${d.layanan}')">OK SIAP</button>
+   <button class="btn done" onclick="selesai('${c.key}')">SELESAI</button>
   </div>`;
  });
- list.innerHTML=html || `<div class="card center">☕ NGOPI DULU BRO<br>PESANAN BELUM ADA</div>`;
+ list.innerHTML=html||`<div class="card center">☕ NGOPI DULU BRO<br>PESANAN BELUM ADA</div>`;
 });
 
+function siap(id,l){
+ db.child(id).update({status:l==="ANTAR"?"DIANTAR":"DIJEMPUT"});
+ toast("Siap bekerja");
+}
 function selesai(id){
- db.child(id).update({status:"SELESAI"});
+ db.child(id).update({status:"SELESAI",selesai:Date.now()});
  toast("Pesanan selesai");
 }
 </script>
