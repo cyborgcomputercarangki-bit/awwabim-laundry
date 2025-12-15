@@ -9,52 +9,31 @@
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
 
 <style>
-body{
- margin:0;font-family:Segoe UI,Arial;
- background:linear-gradient(135deg,#fceabb,#f8b500)
-}
+body{margin:0;font-family:Segoe UI,Arial;background:linear-gradient(135deg,#fceabb,#f8b500)}
 .container{max-width:900px;margin:auto;padding:15px}
-.card{
- background:#fff;border-radius:16px;padding:18px;
- margin-bottom:15px;box-shadow:0 6px 14px rgba(0,0,0,.15)
-}
-h3{margin-top:0}
-input{
- width:100%;padding:14px;font-size:16px;
- margin-bottom:12px;border-radius:10px;border:1px solid #ccc
-}
-.btn{
- width:100%;padding:16px;font-size:17px;
- border:none;border-radius:12px;color:#fff;font-weight:bold
-}
-.btn-antar{background:linear-gradient(135deg,#3498db,#2980b9)}
-.btn-jemput{background:linear-gradient(135deg,#27ae60,#1e8449)}
+.card{background:#fff;border-radius:16px;padding:18px;margin-bottom:15px;box-shadow:0 6px 14px rgba(0,0,0,.15)}
+input{width:100%;padding:14px;margin-bottom:10px;border-radius:10px;border:1px solid #ccc}
+.btn{width:100%;padding:16px;border:none;border-radius:12px;color:#fff;font-weight:bold}
+.antar{background:#3498db}
+.jemput{background:#27ae60}
 .logout{background:#e74c3c;font-size:13px;padding:10px}
 table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{padding:8px;border-bottom:1px solid #ddd;text-align:center}
 th{background:#2c3e50;color:#fff}
-.status{
- padding:6px 10px;border-radius:20px;
- font-size:12px;color:#fff;font-weight:bold
-}
+.status{padding:6px 10px;border-radius:20px;font-size:12px;color:#fff}
 .MENUNGGU_DRIVER{background:#f39c12}
 .SEDANG_DIANTAR{background:#3498db}
 .SEDANG_DIJEMPUT{background:#27ae60}
-.toast{
- position:fixed;bottom:20px;right:20px;
- background:#333;color:#fff;
- padding:14px 18px;border-radius:10px;display:none
-}
 </style>
 </head>
 
 <body>
 <div class="container">
 
-<div class="card" id="loginBox">
+<div class="card" id="login">
  <h3>Login Admin</h3>
- <input id="adminName" placeholder="Nama Admin" autocomplete="name">
- <button class="btn btn-jemput" onclick="login()">MASUK</button>
+ <input id="adminName" placeholder="Nama Admin">
+ <button class="btn jemput" onclick="login()">MASUK</button>
 </div>
 
 <div id="app" style="display:none">
@@ -62,10 +41,9 @@ th{background:#2c3e50;color:#fff}
 <div class="card">
  <h3>Order Baru</h3>
  <input id="nama" placeholder="Nama Pelanggan" autocomplete="name">
- <input id="wa" placeholder="WhatsApp (08xxx)" type="tel" autocomplete="tel">
- <button class="btn btn-antar" onclick="kirim('ANTAR')">🛵 ANTAR</button>
- <br><br>
- <button class="btn btn-jemput" onclick="kirim('JEMPUT')">🧺 JEMPUT</button>
+ <input id="wa" placeholder="WhatsApp" type="tel" autocomplete="tel">
+ <button class="btn antar" onclick="order('ANTAR')">🛵 ANTAR</button><br><br>
+ <button class="btn jemput" onclick="order('JEMPUT')">🧺 JEMPUT</button>
 </div>
 
 <div class="card">
@@ -87,72 +65,59 @@ th{background:#2c3e50;color:#fff}
 <button class="btn logout" onclick="logout()">LOGOUT</button>
 </div>
 
-<div id="toast" class="toast"></div>
-<audio id="notifSound" src="notif.mp3" preload="auto"></audio>
-
 <script>
 firebase.initializeApp({
  apiKey:"AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
  databaseURL:"https://awwabim-laundry-default-rtdb.firebaseio.com"
 });
 const db=firebase.database().ref("Pesanan");
-const notif=document.getElementById("notifSound");
-let lastCount=0;
-
-function playNotif(){notif.currentTime=0;notif.play().catch(()=>{})}
-function toast(t){toastBox.innerText=t;toastBox.style.display="block";setTimeout(()=>toastBox.style.display="none",3000)}
-const toastBox=document.getElementById("toast");
 
 function login(){
- if(!adminName.value.trim()) return toast("Isi nama");
+ if(!adminName.value.trim()) return;
  localStorage.setItem("admin",adminName.value);
- loginBox.style.display="none";app.style.display="block";
+ login.style.display="none";app.style.display="block";
 }
-if(localStorage.getItem("admin")){loginBox.style.display="none";app.style.display="block"}
+if(localStorage.getItem("admin")){login.style.display="none";app.style.display="block"}
 function logout(){localStorage.clear();location.reload()}
 
-function kirim(l){
+function order(l){
  let n=nama.value.trim();
  let w=wa.value.replace(/\D/g,'');
- if(!n||!w) return toast("Lengkapi data");
+ if(!n||!w) return;
  if(w.startsWith("0")) w="62"+w.slice(1);
 
  db.push({
-  nama:n,wa:w,layanan:l,
+  nama:n,
+  wa:w,
+  layanan:l,
   status:"MENUNGGU_DRIVER",
   mulai:firebase.database.ServerValue.TIMESTAMP
  });
- toast("Menunggu driver");
  nama.value="";wa.value="";
 }
 
 db.on("value",snap=>{
  aktif.innerHTML="";history.innerHTML="";
- let count=0;
-
  snap.forEach(c=>{
   const d=c.val();
-  if(d.selesai){
+
+  if(d.status==="SELESAI"){
    history.innerHTML+=`
-   <tr>
-    <td>${d.nama}</td>
-    <td>${d.layanan}</td>
-    <td>${new Date(d.mulai).toLocaleTimeString()}</td>
-    <td>${new Date(d.selesai).toLocaleTimeString()}</td>
-   </tr>`;
+    <tr>
+     <td>${d.nama}</td>
+     <td>${d.layanan}</td>
+     <td>${new Date(d.mulai).toLocaleTimeString()}</td>
+     <td>${d.selesai?new Date(d.selesai).toLocaleTimeString():"-"}</td>
+    </tr>`;
   }else{
-   count++;
    aktif.innerHTML+=`
-   <tr>
-    <td>${d.nama}</td>
-    <td>${d.layanan}</td>
-    <td><span class="status ${d.status}">${d.status}</span></td>
-   </tr>`;
+    <tr>
+     <td>${d.nama}</td>
+     <td>${d.layanan}</td>
+     <td><span class="status ${d.status}">${d.status}</span></td>
+    </tr>`;
   }
  });
-
- if(count>lastCount) playNotif();
- lastCount=count;
 });
 </script>
 </body>
