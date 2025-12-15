@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Awwabim Laundry - Admin</title>
+
+<!-- FIREBASE v8 (STABIL UNTUK WEBVIEW) -->
+<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+
+<style>
+body{
+    margin:0;
+    font-family:Segoe UI,Arial;
+    background:linear-gradient(135deg,#fceabb,#f8b500);
+}
+.container{
+    max-width:1000px;
+    margin:auto;
+    background:#fff;
+    padding:15px;
+    border-radius:12px;
+    box-shadow:0 6px 15px rgba(0,0,0,.2);
+}
+h1{margin:0;color:#2c3e50}
+nav{
+    display:flex;
+    gap:10px;
+    margin:15px 0;
+}
+nav button{
+    flex:1;
+    padding:10px;
+    border:none;
+    border-radius:6px;
+    font-weight:bold;
+    background:#ecf0f1;
+}
+nav button.active{
+    background:#e67e22;
+    color:#fff;
+}
+section{display:none}
+section.active{display:block}
+
+input{
+    width:100%;
+    padding:12px;
+    margin-bottom:10px;
+    border-radius:6px;
+    border:1px solid #ccc;
+}
+.btn{
+    padding:12px;
+    border:none;
+    border-radius:6px;
+    font-weight:bold;
+    color:#fff;
+    cursor:pointer;
+}
+.btn-jemput{background:#27ae60}
+.btn-antar{background:#3498db}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+}
+th,td{
+    padding:8px;
+    border-bottom:1px solid #ddd;
+    text-align:center;
+}
+th{background:#2c3e50;color:#fff}
+
+.status{
+    padding:5px 10px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:bold;
+}
+.MENUNGGU_DRIVER{background:#f39c12}
+.PROSES_CUCI{background:#e74c3c;color:#fff}
+.PROSES_ANTAR{background:#3498db;color:#fff}
+.SELESAI{background:#27ae60;color:#fff}
+
+.toast{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    background:#333;
+    color:#fff;
+    padding:15px;
+    border-radius:8px;
+    display:none;
+    z-index:9999;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+    <h1>🧺 Awwabim Laundry – ADMIN</h1>
+
+    <nav>
+        <button class="active" onclick="openTab('input')">Order Baru</button>
+        <button onclick="openTab('aktif')">Pesanan Aktif</button>
+    </nav>
+
+    <!-- INPUT -->
+    <section id="input" class="active">
+        <input id="nama" placeholder="Nama Pelanggan">
+        <input id="wa" placeholder="WhatsApp (08xxx)">
+        <button class="btn btn-jemput" onclick="submitPesanan('Jemput')">🧺 JEMPUT</button>
+        <br><br>
+        <button class="btn btn-antar" onclick="submitPesanan('Antar')">🚚 ANTAR</button>
+    </section>
+
+    <!-- AKTIF -->
+    <section id="aktif">
+        <table>
+            <thead>
+                <tr>
+                    <th>Waktu</th>
+                    <th>Nama</th>
+                    <th>Layanan</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="list"></tbody>
+        </table>
+    </section>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ================= FIREBASE =================
+const firebaseConfig = {
+    apiKey: "AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
+    authDomain: "awwabim-laundry.firebaseapp.com",
+    databaseURL: "https://awwabim-laundry-default-rtdb.firebaseio.com",
+    projectId: "awwabim-laundry",
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const PesananRef = db.ref("Pesanan");
+
+// ================= UI =================
+function openTab(id){
+    document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+    event.target.classList.add("active");
+}
+
+function toast(msg){
+    const t=document.getElementById("toast");
+    t.innerText=msg;
+    t.style.display="block";
+    setTimeout(()=>t.style.display="none",3000);
+}
+
+// ================= SUBMIT (ANTI BLANK) =================
+function submitPesanan(layanan){
+    const nama=document.getElementById("nama").value.trim();
+    let wa=document.getElementById("wa").value.replace(/\D/g,'');
+
+    if(!nama||!wa){
+        toast("❌ Lengkapi data");
+        return;
+    }
+    if(wa.startsWith("0")) wa="62"+wa.slice(1);
+    if(wa.startsWith("8")) wa="62"+wa;
+
+    const ref=PesananRef.push();
+    ref.set({
+        id:ref.key,
+        namaPelanggan:nama,
+        kontakWa:wa,
+        tipeLayanan:layanan,
+        status:"MENUNGGU_DRIVER",
+        timestamp:firebase.database.ServerValue.TIMESTAMP
+    });
+
+    document.getElementById("nama").value="";
+    document.getElementById("wa").value="";
+    toast("✅ Pesanan masuk");
+}
+
+// ================= STATUS =================
+function nextStatus(id,st){
+    let ns="SELESAI";
+    if(st==="MENUNGGU_DRIVER") ns="PROSES_CUCI";
+    else if(st==="PROSES_CUCI") ns="PROSES_ANTAR";
+    PesananRef.child(id).update({status:ns});
+}
+
+// ================= LISTENER =================
+PesananRef.on("value",snap=>{
+    const list=document.getElementById("list");
+    list.innerHTML="";
+    snap.forEach(c=>{
+        const d=c.val();
+        if(d.status==="SELESAI") return;
+        list.innerHTML+=`
+        <tr>
+            <td>${new Date(d.timestamp).toLocaleTimeString()}</td>
+            <td>${d.namaPelanggan}</td>
+            <td>${d.tipeLayanan}</td>
+            <td><span class="status ${d.status}">${d.status}</span></td>
+            <td><button onclick="nextStatus('${c.key}','${d.status}')">Next</button></td>
+        </tr>`;
+    });
+});
+</script>
+</body>
+</html>
