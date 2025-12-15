@@ -10,6 +10,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
+/* (Styles tetap sama seperti sebelumnya) */
+
 /* --- BASE STYLE --- */
 * { box-sizing: border-box; outline: none; }
 body {
@@ -113,6 +115,7 @@ input {
 <body>
 <div id="toast-box"></div>
 
+<audio id="notifSound" src="https://assets.mixkit.co/sfx/download/mixkit-software-notification-2591.wav" preload="auto"></audio> 
 <div id="headerBar" class="header-bar" style="display:none">
     <div class="brand">DRIVER APP</div>
     <div class="user-profile">
@@ -147,6 +150,10 @@ input {
 </div>
 
 <script>
+// --- GLOBAL VARIABLE UNTUK PELACAKAN STATUS ---
+let previousActiveCount = 0; // Melacak jumlah pesanan aktif sebelumnya
+let initialLoad = true;      // Flag untuk mencegah suara berbunyi saat pertama kali dimuat
+
 // --- FIREBASE ---
 const firebaseConfig = {
     apiKey: "AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
@@ -155,7 +162,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database().ref("Pesanan");
 
-// --- DOM ---
+// --- DOM & AUDIO ---
 const loginBox = document.getElementById("loginBox");
 const app = document.getElementById("app");
 const headerBar = document.getElementById("headerBar");
@@ -163,6 +170,7 @@ const dispName = document.getElementById("dispName");
 const dispImg = document.getElementById("dispImg");
 const divAktif = document.getElementById("listAktif");
 const divHistory = document.getElementById("listHistory");
+const notifSound = document.getElementById("notifSound"); // Ambil elemen audio
 
 // --- TOAST ---
 function showToast(msg, color="#27ae60"){
@@ -202,7 +210,19 @@ function logout(){
     location.reload();
 }
 
-// --- LOGIC ---
+// --- LOGIC PLAY SOUND ---
+function playNotifSound() {
+    // Memastikan suara dapat diputar (browser memerlukan interaksi pengguna sebelum memutar media)
+    if (notifSound) {
+        notifSound.play().catch(error => {
+            console.log("Audio play prevented:", error);
+            // Anda dapat menambahkan instruksi kepada pengguna untuk mengklik layar
+            // jika notifikasi suara tidak berbunyi secara otomatis.
+        });
+    }
+}
+
+// --- LOGIC REALTIME FIREBASE ---
 db.on("value", snap => {
     divAktif.innerHTML = "";
     divHistory.innerHTML = "";
@@ -213,7 +233,7 @@ db.on("value", snap => {
     });
     dataArray.reverse();
 
-    let countAktif = 0;
+    let currentActiveCount = 0; // Hitung pesanan aktif saat ini
 
     dataArray.forEach(d => {
         const time = new Date(d.mulai).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
@@ -231,7 +251,7 @@ db.on("value", snap => {
                 <div style="font-size:12px; color:#27ae60; margin-top:5px">✅ SELESAI</div>
             </div>`;
         } else {
-            countAktif++;
+            currentActiveCount++; // Tambah hitungan pesanan aktif
             
             let btnMain = "";
             let statusClass = "wait";
@@ -264,8 +284,21 @@ db.on("value", snap => {
         }
     });
 
+    // --- LOGIKA NOTIFIKASI SUARA ---
+    if (!initialLoad && currentActiveCount > previousActiveCount) {
+        // Jika jumlah pesanan aktif bertambah setelah loading awal
+        playNotifSound();
+        showToast("🔔 PESANAN BARU MASUK!", "#f1c40f");
+    }
+    
+    // Update hitungan untuk siklus berikutnya
+    previousActiveCount = currentActiveCount;
+    initialLoad = false;
+    // --- END LOGIKA NOTIFIKASI SUARA ---
+
+
     // EMPTY STATE (CENTER & BRIGHT)
-    if(countAktif === 0){
+    if(currentActiveCount === 0){
         divAktif.innerHTML = `
         <div class="empty-state">
             <span class="empty-icon">☕</span>
