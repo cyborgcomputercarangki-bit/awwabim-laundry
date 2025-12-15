@@ -15,13 +15,13 @@
 body {
     margin: 0; padding: 20px 10px;
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #11998e, #38ef7d); /* Hijau Driver */
+    background: linear-gradient(135deg, #11998e, #38ef7d);
     color: #333;
     min-height: 100vh;
 }
 .container { max-width: 600px; margin: auto; }
 
-/* --- COMPONENTS --- */
+/* --- CARD STYLE --- */
 .card {
     background: #fff;
     border-radius: 16px;
@@ -31,7 +31,6 @@ body {
     position: relative;
     overflow: hidden;
 }
-/* Garis warna di pinggir card untuk membedakan status */
 .card.wait { border-left: 6px solid #f1c40f; }
 .card.process { border-left: 6px solid #3498db; }
 .card.done { border-left: 6px solid #bdc3c7; opacity: 0.9; }
@@ -55,7 +54,7 @@ input {
 .btn-login { background: #27ae60; }
 .btn-logout { background: #e74c3c; margin-top: 30px; font-size: 14px; }
 
-/* Tombol Aksi Pesanan */
+/* Grid Tombol WA/Telp */
 .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
 .wa { background: #25D366; }
 .tel { background: #2980b9; }
@@ -64,20 +63,42 @@ input {
     margin-top: 15px; padding: 16px; font-size: 18px; letter-spacing: 1px;
     text-transform: uppercase;
 }
-.siap { background: #f39c12; color: #fff; } /* Kuning */
-.selesai { background: #27ae60; color: #fff; } /* Hijau */
+.siap { background: #f39c12; color: #fff; }
+.selesai { background: #27ae60; color: #fff; }
 
-/* --- EMPTY STATE --- */
+/* --- EMPTY STATE (TENGAH LAYAR & TERANG) --- */
 .empty-state {
-    text-align: center; padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 50vh; /* Setengah tinggi layar */
     color: #fff;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
-.empty-icon { font-size: 50px; display: block; margin-bottom: 10px; }
+.empty-icon { font-size: 60px; display: block; margin-bottom: 15px; }
+.empty-text { font-size: 20px; font-weight: bold; color: #fff; margin-bottom: 5px; }
+.empty-sub { font-size: 14px; color: #f0f0f0; }
+
+/* --- TOAST NOTIFICATION --- */
+#toast-box {
+    position: fixed; top: 20px; right: 20px; z-index: 9999;
+}
+.toast {
+    background: #333; color: #fff; padding: 12px 20px;
+    border-radius: 8px; margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    animation: slideIn 0.3s, fadeOut 0.5s 2.5s forwards;
+    font-size: 14px;
+}
+@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes fadeOut { to { opacity: 0; } }
 </style>
 </head>
 
 <body>
-<div class="container">
+<div id="toast-box"></div> <div class="container">
 
     <div class="card" id="loginBox">
         <h3>🛵 Login Driver</h3>
@@ -90,7 +111,7 @@ input {
         
         <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.5); margin: 30px 0;">
         
-        <h4 style="color:#fff; text-align:center; margin-bottom:15px;">RIWAYAT TERAKHIR</h4>
+        <h4 style="color:#fff; text-align:center; margin-bottom:15px; opacity:0.9">RIWAYAT TERAKHIR</h4>
         <div id="listHistory"></div>
 
         <button class="btn btn-logout" onclick="logout()">LOGOUT</button>
@@ -111,12 +132,23 @@ const db = firebase.database().ref("Pesanan");
 const loginBox = document.getElementById("loginBox");
 const app = document.getElementById("app");
 const divAktif = document.getElementById("listAktif");
-const divHistory = document.getElementById("listHistory"); // ID DIPERBAIKI
+const divHistory = document.getElementById("listHistory");
+
+// --- UTILS ---
+function showToast(msg, color="#27ae60"){
+    const box = document.getElementById("toast-box");
+    const el = document.createElement("div");
+    el.className = "toast";
+    el.innerText = msg;
+    el.style.background = color;
+    box.appendChild(el);
+    setTimeout(()=> el.remove(), 3000);
+}
 
 // --- LOGIN/LOGOUT ---
 function doLogin(){
     const n = document.getElementById("driverName").value.trim();
-    if(!n) return;
+    if(!n) return showToast("Nama Driver wajib diisi!", "#e74c3c");
     localStorage.setItem("driver", n);
     checkAuth();
 }
@@ -130,10 +162,8 @@ function checkAuth(){
 checkAuth();
 
 function logout(){
-    if(confirm("Selesai shift hari ini?")){
-        localStorage.clear();
-        location.reload();
-    }
+    localStorage.clear();
+    location.reload();
 }
 
 // --- LOGIC ---
@@ -145,14 +175,13 @@ db.on("value", snap => {
     snap.forEach(child => {
         dataArray.push({ key: child.key, ...child.val() });
     });
-
-    // Balik urutan (Terbaru diatas)
     dataArray.reverse();
 
     let countAktif = 0;
 
     dataArray.forEach(d => {
         const time = new Date(d.mulai).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const driverYgAmbil = d.driverName ? `(${d.driverName})` : "";
         
         if(d.status === "SELESAI"){
             // TAMPILAN HISTORY
@@ -160,7 +189,7 @@ db.on("value", snap => {
             divHistory.innerHTML += `
             <div class="card done">
                 <div style="display:flex; justify-content:space-between; align-items:center">
-                    <span style="font-weight:bold; color:#7f8c8d">${d.layanan}</span>
+                    <span style="font-weight:bold; color:#7f8c8d">${d.layanan} ${driverYgAmbil}</span>
                     <small style="color:#95a5a6">${time} - ${timeEnd}</small>
                 </div>
                 <div class="big-name" style="color:#555">${d.nama}</div>
@@ -170,18 +199,18 @@ db.on("value", snap => {
             // TAMPILAN AKTIF
             countAktif++;
             
-            // Tentukan tombol utama
             let btnMain = "";
             let statusClass = "wait";
             
             if(d.status === "MENUNGGU_DRIVER"){
-                btnMain = `<button class="btn main-action siap" onclick="updateStatus('${d.key}','${d.layanan}')">🚀 AMBIL ORDER</button>`;
+                // Tombol Ambil Order
+                btnMain = `<button class="btn main-action siap" onclick="ambilOrder('${d.key}','${d.layanan}')">🚀 AMBIL ORDER</button>`;
             } else {
+                // Tombol Selesai
                 statusClass = "process";
                 btnMain = `<button class="btn main-action selesai" onclick="selesai('${d.key}')">✅ SELESAIKAN</button>`;
             }
 
-            // Tentukan Icon
             const iconLayanan = d.layanan === "ANTAR" ? "🛵 ANTAR" : "🧺 JEMPUT";
 
             divAktif.innerHTML += `
@@ -192,6 +221,7 @@ db.on("value", snap => {
                 </h3>
                 <div class="big-name">${d.nama}</div>
                 <p>WhatsApp: ${d.wa}</p>
+                <p style="font-size:12px; color:#666">Status: ${d.status.replace("_"," ")} ${driverYgAmbil}</p>
                 
                 <div class="action-grid">
                     <a class="btn wa" href="https://wa.me/${d.wa}" target="_blank">💬 CHAT</a>
@@ -202,12 +232,13 @@ db.on("value", snap => {
         }
     });
 
+    // EMPTY STATE (Tampilan Tengah & Terang)
     if(countAktif === 0){
         divAktif.innerHTML = `
         <div class="empty-state">
             <span class="empty-icon">☕</span>
-            <h3>Belum ada pesanan aktif</h3>
-            <p>Santai dulu sejenak...</p>
+            <div class="empty-text">BELUM ADA PESANAN</div>
+            <div class="empty-sub">Santai sejenak bro...</div>
         </div>`;
     }
     
@@ -216,18 +247,27 @@ db.on("value", snap => {
     }
 });
 
-function updateStatus(key, layanan){
+function ambilOrder(key, layanan){
+    const drvName = localStorage.getItem("driver");
     const newStatus = layanan === "ANTAR" ? "SEDANG_DIANTAR" : "SEDANG_DIJEMPUT";
-    db.child(key).update({ status: newStatus });
+    
+    // Update ke Firebase (Simpan Nama Driver)
+    db.child(key).update({ 
+        status: newStatus,
+        driverName: drvName
+    });
+
+    showToast("Langsung OTW! 🚀", "#f39c12");
 }
 
 function selesai(key){
-    if(confirm("Pesanan sudah beres?")){
-        db.child(key).update({
-            status: "SELESAI",
-            selesai: firebase.database.ServerValue.TIMESTAMP
-        });
-    }
+    // Langsung eksekusi tanpa confirm
+    db.child(key).update({
+        status: "SELESAI",
+        selesai: firebase.database.ServerValue.TIMESTAMP
+    });
+
+    showToast("Pekerjaan Selesai! Alhamdulillah 🤲", "#27ae60");
 }
 </script>
 </body>
