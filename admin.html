@@ -10,30 +10,40 @@
 
 <style>
 body{
- margin:0;
- font-family:Segoe UI,Arial;
- background:linear-gradient(135deg,#fceabb,#f8b500);
+ margin:0;font-family:Segoe UI,Arial;
+ background:linear-gradient(135deg,#fceabb,#f8b500)
 }
 .container{max-width:900px;margin:auto;padding:15px}
 .card{
- background:#fff;border-radius:14px;padding:15px;
- margin-bottom:15px;box-shadow:0 6px 12px rgba(0,0,0,.15)
+ background:#fff;border-radius:16px;padding:18px;
+ margin-bottom:15px;box-shadow:0 6px 14px rgba(0,0,0,.15)
 }
-input{width:100%;padding:12px;margin-bottom:10px;border-radius:8px;border:1px solid #ccc}
-.btn{width:100%;padding:14px;border:none;border-radius:10px;color:#fff;font-weight:bold}
+h3{margin-top:0}
+input{
+ width:100%;padding:14px;font-size:16px;
+ margin-bottom:12px;border-radius:10px;border:1px solid #ccc
+}
+.btn{
+ width:100%;padding:16px;font-size:17px;
+ border:none;border-radius:12px;color:#fff;font-weight:bold
+}
 .btn-antar{background:linear-gradient(135deg,#3498db,#2980b9)}
 .btn-jemput{background:linear-gradient(135deg,#27ae60,#1e8449)}
-.logout{background:#e74c3c;font-size:12px;padding:8px}
-.status{padding:6px 10px;border-radius:20px;font-size:12px;color:#fff}
-.MENUNGGU_DRIVER{background:#f39c12}
-.SEDANG_DIANTAR{background:#3498db}
-.SEDANG_DIJEMPUT{background:#27ae60}
+.logout{background:#e74c3c;font-size:13px;padding:10px}
 table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{padding:8px;border-bottom:1px solid #ddd;text-align:center}
 th{background:#2c3e50;color:#fff}
+.status{
+ padding:6px 10px;border-radius:20px;
+ font-size:12px;color:#fff;font-weight:bold
+}
+.MENUNGGU_DRIVER{background:#f39c12}
+.SEDANG_DIANTAR{background:#3498db}
+.SEDANG_DIJEMPUT{background:#27ae60}
 .toast{
  position:fixed;bottom:20px;right:20px;
- background:#333;color:#fff;padding:12px 16px;border-radius:8px;display:none
+ background:#333;color:#fff;
+ padding:14px 18px;border-radius:10px;display:none
 }
 </style>
 </head>
@@ -43,7 +53,7 @@ th{background:#2c3e50;color:#fff}
 
 <div class="card" id="loginBox">
  <h3>Login Admin</h3>
- <input id="adminName" placeholder="Nama Admin">
+ <input id="adminName" placeholder="Nama Admin" autocomplete="name">
  <button class="btn btn-jemput" onclick="login()">MASUK</button>
 </div>
 
@@ -51,8 +61,8 @@ th{background:#2c3e50;color:#fff}
 
 <div class="card">
  <h3>Order Baru</h3>
- <input id="nama" placeholder="Nama Pelanggan">
- <input id="wa" placeholder="WhatsApp (08xxx)">
+ <input id="nama" placeholder="Nama Pelanggan" autocomplete="name">
+ <input id="wa" placeholder="WhatsApp (08xxx)" type="tel" autocomplete="tel">
  <button class="btn btn-antar" onclick="kirim('ANTAR')">🛵 ANTAR</button>
  <br><br>
  <button class="btn btn-jemput" onclick="kirim('JEMPUT')">🧺 JEMPUT</button>
@@ -86,15 +96,15 @@ firebase.initializeApp({
  databaseURL:"https://awwabim-laundry-default-rtdb.firebaseio.com"
 });
 const db=firebase.database().ref("Pesanan");
-
 const notif=document.getElementById("notifSound");
 let lastCount=0;
+
 function playNotif(){notif.currentTime=0;notif.play().catch(()=>{})}
 function toast(t){toastBox.innerText=t;toastBox.style.display="block";setTimeout(()=>toastBox.style.display="none",3000)}
 const toastBox=document.getElementById("toast");
 
 function login(){
- if(!adminName.value) return toast("Isi nama");
+ if(!adminName.value.trim()) return toast("Isi nama");
  localStorage.setItem("admin",adminName.value);
  loginBox.style.display="none";app.style.display="block";
 }
@@ -110,19 +120,19 @@ function kirim(l){
  db.push({
   nama:n,wa:w,layanan:l,
   status:"MENUNGGU_DRIVER",
-  mulai:Date.now()
+  mulai:firebase.database.ServerValue.TIMESTAMP
  });
  toast("Menunggu driver");
  nama.value="";wa.value="";
 }
 
-db.on("value",s=>{
+db.on("value",snap=>{
  aktif.innerHTML="";history.innerHTML="";
  let count=0;
 
- s.forEach(c=>{
-  let d=c.val();
-  if(d.status==="SELESAI"){
+ snap.forEach(c=>{
+  const d=c.val();
+  if(d.selesai){
    history.innerHTML+=`
    <tr>
     <td>${d.nama}</td>
