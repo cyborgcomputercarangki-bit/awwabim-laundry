@@ -7,142 +7,227 @@
 
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
-*{box-sizing:border-box}
-body{
- margin:0;font-family:Segoe UI,Arial;
- background:linear-gradient(135deg,#fceabb,#f8b500)
+/* --- BASE STYLE --- */
+* { box-sizing: border-box; outline: none; }
+body {
+    margin: 0; padding: 20px 10px;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #11998e, #38ef7d); /* Hijau Driver */
+    color: #333;
+    min-height: 100vh;
 }
-.container{max-width:900px;margin:auto;padding:15px}
-.card{
- background:#fff;border-radius:16px;padding:18px;
- margin-bottom:15px;box-shadow:0 6px 14px rgba(0,0,0,.15)
+.container { max-width: 600px; margin: auto; }
+
+/* --- COMPONENTS --- */
+.card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    position: relative;
+    overflow: hidden;
 }
-input{
- width:100%;
- padding:20px;
- font-size:18px;
- border-radius:14px;
- border:1px solid #ccc;
- margin-bottom:14px
+/* Garis warna di pinggir card untuk membedakan status */
+.card.wait { border-left: 6px solid #f1c40f; }
+.card.process { border-left: 6px solid #3498db; }
+.card.done { border-left: 6px solid #bdc3c7; opacity: 0.9; }
+
+h3 { margin: 0 0 10px 0; font-size: 1.1rem; display: flex; align-items: center; justify-content: space-between; }
+p { margin: 5px 0; color: #666; font-size: 14px; }
+.big-name { font-size: 18px; font-weight: bold; color: #000; }
+
+input {
+    width: 100%; padding: 16px; font-size: 16px;
+    border-radius: 12px; border: 2px solid #ddd; margin-bottom: 15px;
 }
-.btn{
- width:100%;
- padding:18px;
- font-size:18px;
- border:none;
- border-radius:14px;
- color:#fff;
- font-weight:bold
+
+/* --- BUTTONS --- */
+.btn {
+    width: 100%; padding: 14px; font-size: 16px;
+    border: none; border-radius: 10px; color: #fff;
+    font-weight: 600; cursor: pointer; text-align: center;
+    margin-top: 10px; display: block; text-decoration: none;
 }
-.ok{background:#27ae60}
-.done{background:#3498db}
-.logout{background:#e74c3c;font-size:13px;padding:10px}
-.center{text-align:center;color:#777}
-a.action{
- display:block;margin-top:10px;
- padding:12px;border-radius:10px;
- color:#fff;text-decoration:none;font-weight:bold
+.btn-login { background: #27ae60; }
+.btn-logout { background: #e74c3c; margin-top: 30px; font-size: 14px; }
+
+/* Tombol Aksi Pesanan */
+.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+.wa { background: #25D366; }
+.tel { background: #2980b9; }
+
+.main-action { 
+    margin-top: 15px; padding: 16px; font-size: 18px; letter-spacing: 1px;
+    text-transform: uppercase;
 }
-.wa{background:#25D366}
-.tel{background:#2980b9}
+.siap { background: #f39c12; color: #fff; } /* Kuning */
+.selesai { background: #27ae60; color: #fff; } /* Hijau */
+
+/* --- EMPTY STATE --- */
+.empty-state {
+    text-align: center; padding: 40px 20px;
+    color: #fff;
+}
+.empty-icon { font-size: 50px; display: block; margin-bottom: 10px; }
 </style>
 </head>
 
 <body>
 <div class="container">
 
-<div class="card" id="loginBox">
- <h3>Login Driver</h3>
- <input id="driverName" placeholder="Nama Driver" autocomplete="name">
- <button class="btn ok" onclick="doLogin()">MASUK</button>
-</div>
+    <div class="card" id="loginBox">
+        <h3>🛵 Login Driver</h3>
+        <input id="driverName" placeholder="Nama Driver" autocomplete="off">
+        <button class="btn btn-login" onclick="doLogin()">MULAI KERJA</button>
+    </div>
 
-<div id="app" style="display:none">
- <div id="aktif"></div>
- <div id="history"></div>
- <button class="btn logout" onclick="logout()">LOGOUT</button>
+    <div id="app" style="display:none">
+        <div id="listAktif"></div>
+        
+        <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.5); margin: 30px 0;">
+        
+        <h4 style="color:#fff; text-align:center; margin-bottom:15px;">RIWAYAT TERAKHIR</h4>
+        <div id="listHistory"></div>
+
+        <button class="btn btn-logout" onclick="logout()">LOGOUT</button>
+    </div>
+
 </div>
 
 <script>
-firebase.initializeApp({
- apiKey:"AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
- databaseURL:"https://awwabim-laundry-default-rtdb.firebaseio.com"
-});
-const db=firebase.database().ref("Pesanan");
+// --- CONFIG ---
+const firebaseConfig = {
+    apiKey: "AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
+    databaseURL: "https://awwabim-laundry-default-rtdb.firebaseio.com"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database().ref("Pesanan");
 
-const loginBox=document.getElementById("loginBox");
-const app=document.getElementById("app");
+// --- DOM ---
+const loginBox = document.getElementById("loginBox");
+const app = document.getElementById("app");
+const divAktif = document.getElementById("listAktif");
+const divHistory = document.getElementById("listHistory"); // ID DIPERBAIKI
 
+// --- LOGIN/LOGOUT ---
 function doLogin(){
- const n=document.getElementById("driverName").value.trim();
- if(!n) return;
- localStorage.setItem("driver",n);
- loginBox.style.display="none";
- app.style.display="block";
+    const n = document.getElementById("driverName").value.trim();
+    if(!n) return;
+    localStorage.setItem("driver", n);
+    checkAuth();
 }
 
-if(localStorage.getItem("driver")){
- loginBox.style.display="none";
- app.style.display="block";
+function checkAuth(){
+    if(localStorage.getItem("driver")){
+        loginBox.style.display = "none";
+        app.style.display = "block";
+    }
 }
+checkAuth();
 
 function logout(){
- localStorage.clear();
- location.reload();
+    if(confirm("Selesai shift hari ini?")){
+        localStorage.clear();
+        location.reload();
+    }
 }
 
-db.on("value",snap=>{
- aktif.innerHTML="";
- history.innerHTML="";
+// --- LOGIC ---
+db.on("value", snap => {
+    divAktif.innerHTML = "";
+    divHistory.innerHTML = "";
 
- snap.forEach(c=>{
-  const d=c.val();
+    const dataArray = [];
+    snap.forEach(child => {
+        dataArray.push({ key: child.key, ...child.val() });
+    });
 
-  if(d.status==="SELESAI"){
-   history.innerHTML+=`
-    <div class="card">
-     <b>${d.layanan}</b><br>
-     ${d.nama}<br>
-     ${new Date(d.mulai).toLocaleTimeString()} →
-     ${d.selesai?new Date(d.selesai).toLocaleTimeString():"-"}
-    </div>`;
-  }else{
-   const btn=d.status==="MENUNGGU_DRIVER"
-    ? `<button class="btn ok" onclick="siap('${c.key}','${d.layanan}')">OK SIAP</button>`
-    : `<button class="btn done" onclick="selesai('${c.key}')">SELESAI</button>`;
+    // Balik urutan (Terbaru diatas)
+    dataArray.reverse();
 
-   aktif.innerHTML+=`
-    <div class="card">
-     <h3>${d.layanan==="ANTAR"?"🛵 ANTAR":"🧺 JEMPUT"}</h3>
-     <b>${d.nama}</b><br>
-     ${d.wa}
-     <a class="action wa" href="https://wa.me/${d.wa}" target="_blank">CHAT</a>
-     <a class="action tel" href="tel:${d.wa}">TELPON</a>
-     ${btn}
-    </div>`;
-  }
- });
+    let countAktif = 0;
 
- if(!aktif.innerHTML)
-  aktif.innerHTML=`<div class="card center">☕ NGOPI DULU BRO<br>PESANAN BELUM ADA</div>`;
+    dataArray.forEach(d => {
+        const time = new Date(d.mulai).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        if(d.status === "SELESAI"){
+            // TAMPILAN HISTORY
+            const timeEnd = d.selesai ? new Date(d.selesai).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "-";
+            divHistory.innerHTML += `
+            <div class="card done">
+                <div style="display:flex; justify-content:space-between; align-items:center">
+                    <span style="font-weight:bold; color:#7f8c8d">${d.layanan}</span>
+                    <small style="color:#95a5a6">${time} - ${timeEnd}</small>
+                </div>
+                <div class="big-name" style="color:#555">${d.nama}</div>
+                <div style="font-size:12px; color:#27ae60; margin-top:5px">✅ SELESAI</div>
+            </div>`;
+        } else {
+            // TAMPILAN AKTIF
+            countAktif++;
+            
+            // Tentukan tombol utama
+            let btnMain = "";
+            let statusClass = "wait";
+            
+            if(d.status === "MENUNGGU_DRIVER"){
+                btnMain = `<button class="btn main-action siap" onclick="updateStatus('${d.key}','${d.layanan}')">🚀 AMBIL ORDER</button>`;
+            } else {
+                statusClass = "process";
+                btnMain = `<button class="btn main-action selesai" onclick="selesai('${d.key}')">✅ SELESAIKAN</button>`;
+            }
 
- if(!history.innerHTML)
-  history.innerHTML=`<div class="card center">Belum ada history</div>`;
+            // Tentukan Icon
+            const iconLayanan = d.layanan === "ANTAR" ? "🛵 ANTAR" : "🧺 JEMPUT";
+
+            divAktif.innerHTML += `
+            <div class="card ${statusClass}">
+                <h3>
+                    <span>${iconLayanan}</span>
+                    <small style="font-weight:normal; font-size:12px">${time}</small>
+                </h3>
+                <div class="big-name">${d.nama}</div>
+                <p>WhatsApp: ${d.wa}</p>
+                
+                <div class="action-grid">
+                    <a class="btn wa" href="https://wa.me/${d.wa}" target="_blank">💬 CHAT</a>
+                    <a class="btn tel" href="tel:${d.wa}">📞 TELEPON</a>
+                </div>
+                ${btnMain}
+            </div>`;
+        }
+    });
+
+    if(countAktif === 0){
+        divAktif.innerHTML = `
+        <div class="empty-state">
+            <span class="empty-icon">☕</span>
+            <h3>Belum ada pesanan aktif</h3>
+            <p>Santai dulu sejenak...</p>
+        </div>`;
+    }
+    
+    if(!divHistory.innerHTML){
+        divHistory.innerHTML = `<div style="text-align:center; color:#fff; opacity:0.7">Belum ada riwayat</div>`;
+    }
 });
 
-function siap(id,l){
- db.child(id).update({
-  status:l==="ANTAR"?"SEDANG_DIANTAR":"SEDANG_DIJEMPUT"
- });
+function updateStatus(key, layanan){
+    const newStatus = layanan === "ANTAR" ? "SEDANG_DIANTAR" : "SEDANG_DIJEMPUT";
+    db.child(key).update({ status: newStatus });
 }
 
-function selesai(id){
- db.child(id).update({
-  status:"SELESAI",
-  selesai:firebase.database.ServerValue.TIMESTAMP
- });
+function selesai(key){
+    if(confirm("Pesanan sudah beres?")){
+        db.child(key).update({
+            status: "SELESAI",
+            selesai: firebase.database.ServerValue.TIMESTAMP
+        });
+    }
 }
 </script>
 </body>
