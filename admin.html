@@ -10,142 +10,121 @@
 
 <style>
 body{
- margin:0;
- font-family:Segoe UI,Arial;
- background:linear-gradient(135deg,#fceabb,#f8b500);
+ margin:0;font-family:Segoe UI;
+ background:linear-gradient(135deg,#fceabb,#f8b500)
 }
 .container{
- max-width:1000px;
- margin:auto;
- background:#fff;
- padding:15px;
- border-radius:12px;
- box-shadow:0 6px 15px rgba(0,0,0,.2);
+ max-width:1000px;margin:auto;background:#fff;
+ padding:15px;border-radius:12px
 }
-h1{margin:0;color:#2c3e50}
+h2{margin-top:0}
 
-/* LOGIN BAR */
-#loginBar,#logoutBar{
- padding:10px;
- background:#fffbe6;
- border-bottom:1px solid #ddd;
+/* LOGIN */
+#loginBox{
+ max-width:400px;margin:60px auto;
+ background:#fff;padding:20px;border-radius:10px;
+ box-shadow:0 4px 10px rgba(0,0,0,.2)
 }
-#logoutBar{display:none;background:#eafaf1}
+#loginBox input{
+ width:100%;padding:12px;margin-bottom:10px
+}
+#loginBox button{
+ width:100%;padding:12px;border:none;
+ background:#27ae60;color:#fff;
+ font-weight:bold;border-radius:6px
+}
 
-/* NAV */
+/* DASHBOARD */
+#dashboard{display:none}
+
 nav{display:flex;gap:10px;margin:15px 0}
 nav button{
- flex:1;padding:10px;border:none;border-radius:6px;
- font-weight:bold;background:#ecf0f1
+ flex:1;padding:10px;border:none;
+ border-radius:6px;font-weight:bold
 }
 nav button.active{background:#e67e22;color:#fff}
 
 section{display:none}
 section.active{display:block}
 
-input{
- width:100%;padding:12px;margin-bottom:10px;
- border-radius:6px;border:1px solid #ccc
-}
-.btn{
- padding:12px;border:none;border-radius:6px;
- font-weight:bold;color:#fff;cursor:pointer
-}
-.btn-jemput{background:#27ae60}
-.btn-antar{background:#3498db}
+input{width:100%;padding:10px;margin-bottom:10px}
 
-/* TABLE */
-table{width:100%;border-collapse:collapse;margin-top:10px}
+table{width:100%;border-collapse:collapse}
 th,td{padding:8px;border-bottom:1px solid #ddd;text-align:center}
 th{background:#2c3e50;color:#fff}
 
-/* STATUS */
 .status{
  padding:5px 10px;border-radius:20px;
- font-size:12px;font-weight:bold;color:#fff
+ font-size:12px;color:#fff
 }
 .MENUNGGU_DRIVER{background:#f39c12}
 .PROSES_CUCI{background:#e74c3c}
 .PROSES_ANTAR{background:#3498db}
 .SELESAI{background:#27ae60}
-
-/* TOAST */
-.toast{
- position:fixed;bottom:20px;right:20px;
- background:#333;color:#fff;
- padding:15px;border-radius:8px;
- display:none;z-index:9999
-}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN ADMIN -->
-<div id="loginBar">
- <input id="namaAdmin" placeholder="Nama admin" style="width:70%">
+<!-- LOGIN -->
+<div id="loginBox">
+ <h2>🔐 Login Admin</h2>
+ <input id="adminNameInput" placeholder="Nama Admin">
  <button onclick="loginAdmin()">LOGIN</button>
 </div>
 
-<div id="logoutBar">
- Login sebagai: <b id="adminName"></b>
- <button onclick="logoutAdmin()" style="float:right">LOGOUT</button>
+<!-- DASHBOARD -->
+<div id="dashboard" class="container">
+ <h2>🧺 ADMIN AWWABIM LAUNDRY</h2>
+ <p>Login sebagai: <b id="adminName"></b></p>
+
+ <nav>
+  <button id="tabInput" class="active">Order Baru</button>
+  <button id="tabAktif">Pesanan Aktif</button>
+  <button id="tabHistory">History</button>
+ </nav>
+
+ <!-- ORDER BARU -->
+ <section id="input" class="active">
+  <input id="nama" placeholder="Nama Pelanggan">
+  <input id="wa" placeholder="WhatsApp">
+  <button onclick="submitPesanan('JEMPUT')">🧺 JEMPUT</button><br><br>
+  <button onclick="submitPesanan('ANTAR')">🚚 ANTAR</button>
+ </section>
+
+ <!-- AKTIF -->
+ <section id="aktif">
+  <table>
+   <thead>
+    <tr>
+     <th>Waktu</th>
+     <th>Pelanggan</th>
+     <th>Layanan</th>
+     <th>Driver</th>
+     <th>Status</th>
+     <th>Aksi</th>
+    </tr>
+   </thead>
+   <tbody id="listAktif"></tbody>
+  </table>
+ </section>
+
+ <!-- HISTORY -->
+ <section id="history">
+  <table>
+   <thead>
+    <tr>
+     <th>Waktu</th>
+     <th>Pelanggan</th>
+     <th>Layanan</th>
+     <th>Driver</th>
+     <th>Status</th>
+    </tr>
+   </thead>
+   <tbody id="listHistory"></tbody>
+  </table>
+ </section>
 </div>
-
-<div class="container">
-<h1>🧺 Awwabim Laundry – ADMIN</h1>
-
-<nav>
- <button class="active" onclick="openTab('input',this)">Order Baru</button>
- <button onclick="openTab('aktif',this)">Pesanan Aktif</button>
- <button onclick="openTab('history',this)">History</button>
-</nav>
-
-<!-- ORDER BARU -->
-<section id="input" class="active">
- <input id="nama" placeholder="Nama Pelanggan">
- <input id="wa" placeholder="WhatsApp (08xxx)">
- <button class="btn btn-jemput" onclick="submitPesanan('JEMPUT')">🧺 JEMPUT</button>
- <br><br>
- <button class="btn btn-antar" onclick="submitPesanan('ANTAR')">🚚 ANTAR</button>
-</section>
-
-<!-- AKTIF -->
-<section id="aktif">
-<table>
-<thead>
-<tr>
- <th>Waktu</th>
- <th>Pelanggan</th>
- <th>Layanan</th>
- <th>Driver</th>
- <th>Status</th>
- <th>Aksi</th>
-</tr>
-</thead>
-<tbody id="listAktif"></tbody>
-</table>
-</section>
-
-<!-- HISTORY -->
-<section id="history">
-<table>
-<thead>
-<tr>
- <th>Waktu</th>
- <th>Pelanggan</th>
- <th>Layanan</th>
- <th>Driver</th>
- <th>Status</th>
-</tr>
-</thead>
-<tbody id="listHistory"></tbody>
-</table>
-</section>
-
-</div>
-
-<div id="toast" class="toast"></div>
 
 <script>
 /* ===== FIREBASE ===== */
@@ -153,54 +132,41 @@ firebase.initializeApp({
  apiKey:"AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
  databaseURL:"https://awwabim-laundry-default-rtdb.firebaseio.com"
 });
-const db = firebase.database();
-const Pesanan = db.ref("Pesanan");
-const Notif = db.ref("Notifikasi");
+const Pesanan = firebase.database().ref("Pesanan");
+
+/* ===== DOM ===== */
+const loginBox=document.getElementById("loginBox");
+const dashboard=document.getElementById("dashboard");
+const adminName=document.getElementById("adminName");
 
 /* ===== LOGIN ===== */
-const admin = localStorage.getItem("admin");
-if(admin){
- loginBar.style.display="none";
- logoutBar.style.display="block";
- adminName.innerText=admin;
-}
 function loginAdmin(){
- const n=namaAdmin.value.trim();
- if(!n) return alert("Nama wajib diisi");
- localStorage.setItem("admin",n);
- loginBar.style.display="none";
- logoutBar.style.display="block";
+ const n=document.getElementById("adminNameInput").value.trim();
+ if(!n) return alert("Nama admin wajib diisi");
  adminName.innerText=n;
-}
-function logoutAdmin(){
- localStorage.removeItem("admin");
- location.reload();
+ loginBox.style.display="none";
+ dashboard.style.display="block";
 }
 
-/* ===== UI ===== */
-function openTab(id,btn){
+/* ===== TAB ===== */
+function openTab(id){
  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
  document.getElementById(id).classList.add("active");
  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
- btn.classList.add("active");
+ document.getElementById("tab"+id.charAt(0).toUpperCase()+id.slice(1)).classList.add("active");
 }
-function toast(msg){
- const t=document.getElementById("toast");
- t.innerText=msg;
- t.style.display="block";
- setTimeout(()=>t.style.display="none",3000);
-}
+tabInput.onclick=()=>openTab("input");
+tabAktif.onclick=()=>openTab("aktif");
+tabHistory.onclick=()=>openTab("history");
 
-/* ===== SUBMIT ORDER ===== */
+/* ===== SUBMIT ===== */
 function submitPesanan(layanan){
  const n=nama.value.trim();
  let w=wa.value.replace(/\D/g,'');
- if(!n||!w) return toast("Lengkapi data");
+ if(!n||!w) return alert("Lengkapi data");
  if(w.startsWith("0")) w="62"+w.slice(1);
 
- const ref=Pesanan.push();
- ref.set({
-  id:ref.key,
+ Pesanan.push({
   namaPelanggan:n,
   kontakWa:w,
   tipeLayanan:layanan,
@@ -209,34 +175,7 @@ function submitPesanan(layanan){
   timestamp:Date.now()
  });
 
- toast("Order masuk, menunggu driver");
  nama.value=""; wa.value="";
-}
-
-/* ===== STATUS + NOTIF KE DRIVER ===== */
-function nextStatus(id,st,driver,nama){
- let ns="",msg="";
- if(st==="MENUNGGU_DRIVER"){
-  return toast("Menunggu driver ambil");
- }
- if(st==="PROSES_CUCI"){
-  ns="PROSES_ANTAR";
-  msg="🚚 Pesanan siap diantar";
- }else{
-  ns="SELESAI";
-  msg="✅ Pesanan selesai";
- }
-
- Pesanan.child(id).update({status:ns});
-
- if(driver){
-  Notif.push({
-   ke:driver,
-   pesan:`${msg} (${nama})`,
-   waktu:Date.now(),
-   dibaca:false
-  });
- }
 }
 
 /* ===== LIST ===== */
@@ -264,12 +203,9 @@ Pesanan.on("value",snap=>{
     <td>${d.driver||"-"}</td>
     <td><span class="status ${d.status}">${d.status}</span></td>
     <td>
-     <button onclick="nextStatus(
-      '${c.key}',
-      '${d.status}',
-      '${d.driver}',
-      '${d.namaPelanggan}'
-     )">Next</button>
+     <button onclick="Pesanan.child('${c.key}').update({status:'SELESAI'})">
+      Selesai
+     </button>
     </td>
    </tr>`;
   }
