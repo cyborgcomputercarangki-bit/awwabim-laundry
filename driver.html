@@ -9,16 +9,42 @@
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
 
 <style>
-body{margin:0;font-family:Segoe UI,Arial;background:linear-gradient(135deg,#fceabb,#f8b500)}
+*{box-sizing:border-box}
+body{
+ margin:0;font-family:Segoe UI,Arial;
+ background:linear-gradient(135deg,#fceabb,#f8b500)
+}
 .container{max-width:900px;margin:auto;padding:15px}
-.card{background:#fff;border-radius:16px;padding:18px;margin-bottom:15px;box-shadow:0 6px 14px rgba(0,0,0,.15)}
-input{width:100%;padding:18px;font-size:18px;border-radius:12px;border:1px solid #ccc}
-.btn{width:100%;padding:18px;font-size:18px;border:none;border-radius:14px;color:#fff;font-weight:bold;margin-top:10px}
+.card{
+ background:#fff;border-radius:16px;padding:18px;
+ margin-bottom:15px;box-shadow:0 6px 14px rgba(0,0,0,.15)
+}
+input{
+ width:100%;
+ padding:20px;
+ font-size:18px;
+ border-radius:14px;
+ border:1px solid #ccc;
+ margin-bottom:14px
+}
+.btn{
+ width:100%;
+ padding:18px;
+ font-size:18px;
+ border:none;
+ border-radius:14px;
+ color:#fff;
+ font-weight:bold
+}
 .ok{background:#27ae60}
 .done{background:#3498db}
 .logout{background:#e74c3c;font-size:13px;padding:10px}
 .center{text-align:center;color:#777}
-a.action{display:block;margin-top:10px;padding:12px;border-radius:10px;color:#fff;text-decoration:none;font-weight:bold}
+a.action{
+ display:block;margin-top:10px;
+ padding:12px;border-radius:10px;
+ color:#fff;text-decoration:none;font-weight:bold
+}
 .wa{background:#25D366}
 .tel{background:#2980b9}
 </style>
@@ -27,10 +53,10 @@ a.action{display:block;margin-top:10px;padding:12px;border-radius:10px;color:#ff
 <body>
 <div class="container">
 
-<div class="card" id="login">
+<div class="card" id="loginBox">
  <h3>Login Driver</h3>
- <input id="driverName" placeholder="Nama Driver">
- <button class="btn ok" onclick="login()">MASUK</button>
+ <input id="driverName" placeholder="Nama Driver" autocomplete="name">
+ <button class="btn ok" onclick="doLogin()">MASUK</button>
 </div>
 
 <div id="app" style="display:none">
@@ -46,16 +72,31 @@ firebase.initializeApp({
 });
 const db=firebase.database().ref("Pesanan");
 
-function login(){
- if(!driverName.value.trim()) return;
- localStorage.setItem("driver",driverName.value);
- login.style.display="none";app.style.display="block";
+const loginBox=document.getElementById("loginBox");
+const app=document.getElementById("app");
+
+function doLogin(){
+ const n=document.getElementById("driverName").value.trim();
+ if(!n) return;
+ localStorage.setItem("driver",n);
+ loginBox.style.display="none";
+ app.style.display="block";
 }
-if(localStorage.getItem("driver")){login.style.display="none";app.style.display="block"}
-function logout(){localStorage.clear();location.reload()}
+
+if(localStorage.getItem("driver")){
+ loginBox.style.display="none";
+ app.style.display="block";
+}
+
+function logout(){
+ localStorage.clear();
+ location.reload();
+}
 
 db.on("value",snap=>{
- aktif.innerHTML="";history.innerHTML="";
+ aktif.innerHTML="";
+ history.innerHTML="";
+
  snap.forEach(c=>{
   const d=c.val();
 
@@ -68,7 +109,7 @@ db.on("value",snap=>{
      ${d.selesai?new Date(d.selesai).toLocaleTimeString():"-"}
     </div>`;
   }else{
-   const btn = d.status==="MENUNGGU_DRIVER"
+   const btn=d.status==="MENUNGGU_DRIVER"
     ? `<button class="btn ok" onclick="siap('${c.key}','${d.layanan}')">OK SIAP</button>`
     : `<button class="btn done" onclick="selesai('${c.key}')">SELESAI</button>`;
 
@@ -84,8 +125,11 @@ db.on("value",snap=>{
   }
  });
 
- if(!aktif.innerHTML) aktif.innerHTML=`<div class="card center">☕ NGOPI DULU BRO<br>PESANAN BELUM ADA</div>`;
- if(!history.innerHTML) history.innerHTML=`<div class="card center">Belum ada history</div>`;
+ if(!aktif.innerHTML)
+  aktif.innerHTML=`<div class="card center">☕ NGOPI DULU BRO<br>PESANAN BELUM ADA</div>`;
+
+ if(!history.innerHTML)
+  history.innerHTML=`<div class="card center">Belum ada history</div>`;
 });
 
 function siap(id,l){
@@ -93,6 +137,7 @@ function siap(id,l){
   status:l==="ANTAR"?"SEDANG_DIANTAR":"SEDANG_DIJEMPUT"
  });
 }
+
 function selesai(id){
  db.child(id).update({
   status:"SELESAI",
