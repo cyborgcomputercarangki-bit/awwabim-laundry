@@ -3,46 +3,111 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Awwabim Laundry</title>
+<title>ADMIN AWWABIM LAUNDRY</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
 
 <style>
-body{margin:0;font-family:Segoe UI;background:linear-gradient(135deg,#fceabb,#f8b500)}
-.container{max-width:1000px;margin:auto;background:#fff;padding:15px;border-radius:12px}
+body{
+ margin:0;
+ font-family:Segoe UI,Arial;
+ background:linear-gradient(135deg,#fceabb,#f8b500);
+}
+.container{
+ max-width:1000px;
+ margin:auto;
+ background:#fff;
+ padding:15px;
+ border-radius:12px;
+}
 
-.main-nav{display:flex;gap:10px;overflow-x:auto}
-.nav-item{padding:8px 12px;font-weight:bold;color:#555;text-decoration:none}
-.nav-item.active{color:#e67e22;border-bottom:3px solid #e67e22}
+/* HEADER */
+.header{
+ text-align:center;
+ font-size:1.3em;
+ font-weight:bold;
+ color:#2c3e50;
+ margin-bottom:10px;
+}
+
+/* NAV */
+.main-nav{
+ display:flex;
+ gap:10px;
+ overflow-x:auto;
+ margin-bottom:10px;
+}
+.nav-item{
+ padding:8px 12px;
+ font-weight:bold;
+ color:#555;
+ text-decoration:none;
+}
+.nav-item.active{
+ color:#e67e22;
+ border-bottom:3px solid #e67e22;
+}
 
 .tab-content{display:none}
 .tab-content.active{display:block}
 
-form{display:flex;flex-direction:column;gap:12px}
-input{padding:10px;border-radius:6px;border:1px solid #ccc}
+/* FORM */
+form{display:flex;flex-direction:column;gap:10px}
+input{
+ padding:10px;
+ border-radius:6px;
+ border:1px solid #ccc;
+}
 
 .btn-group{display:flex;gap:10px}
-.btn{flex:1;padding:12px;border:none;color:#fff;font-weight:bold;border-radius:6px}
+.btn{
+ flex:1;
+ padding:12px;
+ border:none;
+ color:#fff;
+ font-weight:bold;
+ border-radius:6px;
+}
 .btn-jemput{background:#27ae60}
 .btn-antar{background:#3498db}
 
-.info-status{display:none;margin-top:10px;padding:10px;border-radius:6px;font-weight:bold;text-align:center}
-.info-jemput{background:#e9f7ef;color:#27ae60;border:1px solid #27ae60}
-.info-antar{background:#eaf2fb;color:#3498db;border:1px solid #3498db}
+/* STATUS BAR */
+.info-status{
+ display:none;
+ margin-top:8px;
+ padding:10px;
+ border-radius:6px;
+ font-weight:bold;
+ text-align:center;
+}
+.info-jemput{
+ background:#e9f7ef;
+ color:#27ae60;
+ border:1px solid #27ae60;
+}
+.info-antar{
+ background:#eaf2fb;
+ color:#3498db;
+ border:1px solid #3498db;
+}
 
+/* TABLE */
 .table-wrapper{width:100%;overflow-x:auto}
 table{width:100%;border-collapse:collapse}
-th,td{padding:8px;border-bottom:1px solid #eee;font-size:.9em}
+th,td{
+ padding:8px;
+ border-bottom:1px solid #eee;
+ font-size:.9em;
+}
 th{background:#2c3e50;color:#fff}
 
-.status{padding:4px 8px;border-radius:12px;font-size:.8em;color:#fff}
-.menunggu{background:#f39c12}
-.selesai{background:#27ae60}
-
 .btn-selesai{
- background:#27ae60;color:#fff;border:none;
- padding:6px 10px;border-radius:4px;
+ background:#27ae60;
+ color:#fff;
+ border:none;
+ padding:6px 10px;
+ border-radius:4px;
 }
 
 @media(max-width:600px){
@@ -54,33 +119,40 @@ th{background:#2c3e50;color:#fff}
 <body>
 <div class="container">
 
+<div class="header">ADMIN AWWABIM LAUNDRY</div>
+
 <nav class="main-nav">
-  <a href="#" class="nav-item active" data-tab="input">Order Baru</a>
-  <a href="#" class="nav-item" data-tab="aktif">Pesanan Aktif</a>
-  <a href="#" class="nav-item" data-tab="history">History</a>
+ <a href="#" class="nav-item active" data-tab="input">Order Baru</a>
+ <a href="#" class="nav-item" data-tab="aktif">Pesanan Aktif</a>
+ <a href="#" class="nav-item" data-tab="history">History</a>
 </nav>
 
 <!-- INPUT -->
 <div id="input" class="tab-content active">
-<h3>Input Pesanan</h3>
 <form id="form">
-  <input id="nama" placeholder="Nama pelanggan">
-  <input id="wa" placeholder="WhatsApp (08xxx)">
-  <div class="btn-group">
-    <button type="button" class="btn btn-jemput" onclick="simpan('JEMPUT')">🧺 JEMPUT</button>
-    <button type="button" class="btn btn-antar" onclick="simpan('ANTAR')">🚚 ANTAR</button>
-  </div>
-  <div id="info" class="info-status"></div>
+ <input id="nama" placeholder="Nama pelanggan">
+ <input id="wa" placeholder="WhatsApp (08xxx)">
+ <input id="driver" placeholder="Nama driver">
+ <div class="btn-group">
+  <button type="button" class="btn btn-jemput" onclick="simpan('JEMPUT')">🧺 JEMPUT</button>
+  <button type="button" class="btn btn-antar" onclick="simpan('ANTAR')">🚚 ANTAR</button>
+ </div>
+ <div id="info" class="info-status"></div>
 </form>
 </div>
 
 <!-- AKTIF -->
 <div id="aktif" class="tab-content">
-<h3>Pesanan Aktif</h3>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Waktu</th><th>Nama</th><th>Layanan</th><th>Aksi</th></tr>
+<tr>
+ <th>Waktu</th>
+ <th>Pelanggan</th>
+ <th>Driver</th>
+ <th>Layanan</th>
+ <th>Aksi</th>
+</tr>
 </thead>
 <tbody id="listAktif"></tbody>
 </table>
@@ -89,11 +161,16 @@ th{background:#2c3e50;color:#fff}
 
 <!-- HISTORY -->
 <div id="history" class="tab-content">
-<h3>History Pesanan</h3>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Waktu</th><th>Nama</th><th>Layanan</th><th>Status</th></tr>
+<tr>
+ <th>Waktu</th>
+ <th>Pelanggan</th>
+ <th>Driver</th>
+ <th>Layanan</th>
+ <th>Status</th>
+</tr>
 </thead>
 <tbody id="listHistory"></tbody>
 </table>
@@ -103,6 +180,7 @@ th{background:#2c3e50;color:#fff}
 </div>
 
 <script>
+/* FIREBASE */
 firebase.initializeApp({
  apiKey:"AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
  databaseURL:"https://awwabim-laundry-default-rtdb.firebaseio.com/"
@@ -122,37 +200,50 @@ document.querySelectorAll(".nav-item").forEach(n=>{
 
 /* SIMPAN */
 function simpan(layanan){
- let nama=namaEl.value.trim(), wa=waEl.value.trim();
+ let nama=namaEl.value.trim();
+ let wa=waEl.value.trim();
+ let driver=driverEl.value.trim();
  let info=document.getElementById("info");
 
- if(!nama||!wa){
+ if(!nama||!wa||!driver){
   info.style.display="block";
-  info.innerText="Nama & WhatsApp wajib diisi";
+  info.className="info-status";
+  info.innerText="Semua field wajib diisi";
+  autoHideInfo();
   return;
  }
 
  if(wa.startsWith("0")) wa="62"+wa.slice(1);
 
  db.push({
-  nama,wa,layanan,
+  nama,wa,driver,layanan,
   status:"MENUNGGU",
   waktu:Date.now()
  });
 
  info.style.display="block";
- info.className="info-status "+(layanan=="JEMPUT"?"info-jemput":"info-antar");
+ info.className="info-status "+(layanan==="JEMPUT"?"info-jemput":"info-antar");
  info.innerText=`Pesanan ${layanan} berhasil disimpan`;
+ autoHideInfo();
  form.reset();
+}
+
+/* AUTO HIDE INFO */
+function autoHideInfo(){
+ setTimeout(()=>{
+  document.getElementById("info").style.display="none";
+ },3000);
 }
 
 /* LIST */
 const namaEl=document.getElementById("nama");
 const waEl=document.getElementById("wa");
+const driverEl=document.getElementById("driver");
 const form=document.getElementById("form");
 
-db.on("value",s=>{
- let aktif="",history="";
- s.forEach(d=>{
+db.on("value",snap=>{
+ let aktif="", history="";
+ snap.forEach(d=>{
   let v=d.val();
   let jam=new Date(v.waktu).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"});
 
@@ -161,6 +252,7 @@ db.on("value",s=>{
     <tr>
      <td>${jam}</td>
      <td>${v.nama}</td>
+     <td>${v.driver}</td>
      <td>${v.layanan}</td>
      <td><button class="btn-selesai" onclick="selesai('${d.key}')">SELESAI</button></td>
     </tr>`;
@@ -169,16 +261,18 @@ db.on("value",s=>{
     <tr>
      <td>${jam}</td>
      <td>${v.nama}</td>
+     <td>${v.driver}</td>
      <td>${v.layanan}</td>
-     <td><span class="status selesai">SELESAI</span></td>
+     <td>SELESAI</td>
     </tr>`;
   }
  });
 
- listAktif.innerHTML=aktif||"<tr><td colspan=4>Kosong</td></tr>";
- listHistory.innerHTML=history||"<tr><td colspan=4>Belum ada</td></tr>";
+ listAktif.innerHTML=aktif||"<tr><td colspan=5>Kosong</td></tr>";
+ listHistory.innerHTML=history||"<tr><td colspan=5>Belum ada</td></tr>";
 });
 
+/* SELESAI */
 function selesai(id){
  db.child(id).update({status:"SELESAI"});
 }
