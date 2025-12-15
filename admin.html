@@ -30,7 +30,9 @@ body {
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     z-index: 100;
 }
+/* PERUBAHAN DI SINI */
 .brand { font-weight: 700; color: #FF5E62; font-size: 18px; }
+/* END PERUBAHAN */
 .user-profile { display: flex; align-items: center; gap: 10px; }
 .user-name { font-size: 14px; font-weight: 600; text-align: right; }
 .user-role { font-size: 11px; color: #888; display: block; }
@@ -66,20 +68,25 @@ input:focus { border-color: #FF5E62; background: #fff; }
 .antar { background: #3498db; }
 .jemput { background: #27ae60; }
 .logout { background: #e74c3c; margin-top: 20px; }
+.pilih-kontak { 
+    background: #25D366; 
+    padding: 10px; margin-bottom: 15px;
+    font-size: 14px;
+}
 
 /* --- TABLE (RESPONSIVE FIX) --- */
 table {
     width: 100%; 
     border-collapse: collapse; 
-    table-layout: fixed; /* Kunci lebar tabel agar pas layar */
+    table-layout: fixed;
 }
 th, td {
     padding: 10px 5px; 
     text-align: left; 
     border-bottom: 1px solid #eee; 
-    font-size: 13px; /* Font agak kecil agar muat */
+    font-size: 13px;
     vertical-align: top;
-    word-wrap: break-word; /* Bungkus teks panjang ke bawah */
+    word-wrap: break-word;
 }
 th { background: #f8f9fa; color: #555; font-weight: 600; }
 .col-nama { width: 35%; }
@@ -118,8 +125,7 @@ th { background: #f8f9fa; color: #555; font-weight: 600; }
 <div id="toast-box"></div> 
 
 <div id="headerBar" class="header-bar" style="display:none">
-    <div class="brand">ADMIN PANEL</div>
-    <div class="user-profile">
+    <div class="brand">ADMIN AWWABIM</div> <div class="user-profile">
         <div>
             <div class="user-name" id="dispName">Admin</div>
             <span class="user-role">Administrator</span>
@@ -141,7 +147,11 @@ th { background: #f8f9fa; color: #555; font-weight: 600; }
         <div class="card">
             <h3>📝 Order Baru</h3>
             <input id="nama" placeholder="Nama Pelanggan" autocomplete="off">
-            <input id="wa" placeholder="WhatsApp (cth: 0812xxx)" type="tel" inputmode="numeric"> 
+            <input id="wa" placeholder="WhatsApp (cth: 0812xxx)" type="tel" inputmode="numeric" autocomplete="tel"> 
+            
+            <button class="btn pilih-kontak" onclick="pilihKontak()">
+                📞 PILIH KONTAK DARI WA
+            </button>
             
             <div class="btn-group">
                 <button class="btn antar" onclick="buatOrder('ANTAR')">🛵 ANTAR</button>
@@ -231,11 +241,10 @@ function checkAuth(){
         
         // Set Profile Header
         dispName.innerText = user;
-        // API Avatar Generator (Berdasarkan Nama)
         dispImg.src = `https://ui-avatars.com/api/?name=${user}&background=random&color=fff`;
     }
 }
-checkAuth(); // Auto run
+checkAuth(); 
 
 function logout(){
     localStorage.clear();
@@ -243,6 +252,13 @@ function logout(){
 }
 
 // --- ORDER LOGIC ---
+function pilihKontak(){
+    const pesanAwal = encodeURIComponent("Halo, saya admin Laundry. Mohon kirimkan nomor telepon yang ingin Anda gunakan untuk pemesanan.");
+    window.open(`https://wa.me/?text=${pesanAwal}`, '_blank');
+
+    showToast("Pilih kontak di WhatsApp, lalu salin nomornya!", "#25D366");
+}
+
 function buatOrder(layanan){
     const nama = inpNama.value.trim();
     let wa = inpWa.value.replace(/\D/g,'');
