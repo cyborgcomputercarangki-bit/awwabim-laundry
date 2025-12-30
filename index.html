@@ -33,10 +33,19 @@ body {
 .brand { font-weight: 700; color: #FF5E62; font-size: 18px; }
 .user-profile { display: flex; align-items: center; gap: 10px; }
 .user-name { font-size: 14px; font-weight: 600; text-align: right; }
-.user-role { font-size: 11px; color: #888; display: block; }
-.avatar {
-    width: 40px; height: 40px; border-radius: 50%;
-    border: 2px solid #FF5E62;
+.avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #FF5E62; }
+
+/* --- TABS NAVIGATION --- */
+.tab-nav {
+    display: flex; background: rgba(255, 255, 255, 0.2);
+    padding: 5px; border-radius: 15px; margin-bottom: 20px; gap: 5px;
+}
+.tab-btn {
+    flex: 1; padding: 12px; border: none; border-radius: 12px;
+    background: transparent; color: #fff; font-weight: 600; cursor: pointer;
+}
+.tab-btn.active {
+    background: #fff; color: #FF5E62; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 /* --- CARD STYLE --- */
@@ -46,64 +55,38 @@ body {
 }
 h3 { margin-top: 0; margin-bottom: 15px; color: #444; font-size: 1.1rem; }
 
-/* --- INPUTS --- */
-input {
+/* --- INPUTS & SELECT --- */
+input, select {
     width: 100%; padding: 15px; font-size: 16px;
     border-radius: 12px; border: 2px solid #eee; margin-bottom: 15px;
-    background: #fafafa; transition: 0.3s;
+    background: #fafafa;
 }
-input:focus { border-color: #FF5E62; background: #fff; }
+
+/* --- TABLE --- */
+table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
+th { background: #f8f9fa; color: #555; }
 
 /* --- BUTTONS --- */
 .btn {
     width: 100%; padding: 15px; font-size: 16px;
-    border: none; border-radius: 12px;
-    color: #fff; font-weight: 600; cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border: none; border-radius: 12px; color: #fff; font-weight: 600; cursor: pointer;
 }
-.btn:active { transform: scale(0.98); }
-.btn-group { display: flex; gap: 10px; margin-top: 10px; }
 .antar { background: #3498db; }
 .jemput { background: #27ae60; }
+.pilih-kontak { background: #5f27cd; margin-bottom: 15px; font-size: 14px; }
+.btn-group { display: flex; gap: 10px; margin-top: 10px; }
 .logout { background: #e74c3c; margin-top: 20px; }
-.pilih-kontak { 
-    background: #5f27cd; /* Ungu mewah agar terlihat professional */
-    padding: 12px; margin-bottom: 15px;
-    font-size: 14px;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-}
 
-/* --- TABLE --- */
-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-th, td {
-    padding: 10px 5px; text-align: left; border-bottom: 1px solid #eee; 
-    font-size: 13px; vertical-align: top; word-wrap: break-word;
-}
-th { background: #f8f9fa; color: #555; font-weight: 600; }
-.col-nama { width: 35%; }
-.col-layanan { width: 30%; }
-.col-status { width: 35%; }
-
-/* --- BADGES --- */
-.badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; color: #fff; }
-.MENUNGGU_DRIVER { background: #f1c40f; }
-.SEDANG_DIANTAR { background: #3498db; }
-.SEDANG_DIJEMPUT { background: #27ae60; }
-.SELESAI { background: #95a5a6; }
-.driver-info { font-size: 10px; color: #555; font-style: italic; display: block; }
-
-/* --- TOAST --- */
+/* --- TOAST & BADGE --- */
 #toast-box { position: fixed; top: 80px; right: 20px; z-index: 9999; }
-.toast {
-    background: #333; color: #fff; padding: 10px 20px;
-    border-radius: 8px; margin-bottom: 10px; font-size: 13px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    animation: slideIn 0.3s, fadeOut 0.5s 2.5s forwards;
-}
+.toast { background: #333; color: #fff; padding: 10px 20px; border-radius: 8px; margin-bottom: 10px; animation: slideIn 0.3s forwards; }
 @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-@keyframes fadeOut { to { opacity: 0; } }
-
-#loginBox { margin-top: 50px; }
+.badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; color: white; }
+.bg-blue { background: #3498db; }
+.bg-green { background: #27ae60; }
+.bg-orange { background: #f39c12; }
+.bg-gray { background: #95a5a6; }
 </style>
 </head>
 
@@ -113,63 +96,88 @@ th { background: #f8f9fa; color: #555; font-weight: 600; }
 <div id="headerBar" class="header-bar" style="display:none">
     <div class="brand">ADMIN AWWABIM</div>
     <div class="user-profile">
-        <div>
-            <div class="user-name" id="dispName">Admin</div>
-            <span class="user-role">Administrator</span>
-        </div>
-        <img id="dispImg" src="" class="avatar" alt="User">
+        <div class="user-name" id="dispName">Admin</div>
+        <img id="dispImg" src="" class="avatar">
     </div>
 </div>
 
 <div class="container">
     <div class="card" id="loginBox">
         <h3>🔐 Login Admin</h3>
-        <input id="adminName" placeholder="Masukkan Nama Admin" autocomplete="off">
+        <input id="adminName" placeholder="Nama Admin">
         <button class="btn jemput" onclick="doLogin()">MASUK DASHBOARD</button>
     </div>
 
     <div id="app" style="display:none">
-        <div class="card">
-            <h3>📝 Order Baru</h3>
-            <input id="nama" placeholder="Nama Pelanggan" autocomplete="off">
-            <input id="wa" placeholder="Nomor WhatsApp" type="tel" inputmode="numeric"> 
-            
-            <button class="btn pilih-kontak" onclick="pilihKontak()">
-                👤 AMBIL DARI KONTAK HP
-            </button>
-            
-            <div class="btn-group">
-                <button class="btn antar" onclick="buatOrder('ANTAR')">🛵 ANTAR</button>
-                <button class="btn jemput" onclick="buatOrder('JEMPUT')">🧺 JEMPUT</button>
+        <div class="tab-nav">
+            <button id="btnOrder" class="tab-btn active" onclick="switchTab('order')">📝 ORDER</button>
+            <button id="btnRekap" class="tab-btn" onclick="switchTab('rekap')">📊 REKAP & HISTORY</button>
+        </div>
+
+        <div id="tabOrder">
+            <div class="card">
+                <h3>📝 Buat Order Baru</h3>
+                <input id="nama" placeholder="Nama Pelanggan">
+                <input id="wa" placeholder="WhatsApp (Contoh: 0812...)" type="tel"> 
+                <button class="btn pilih-kontak" onclick="pilihKontak()">👤 AMBIL DARI KONTAK</button>
+                <div class="btn-group">
+                    <button class="btn antar" onclick="buatOrder('ANTAR')">🛵 ANTAR</button>
+                    <button class="btn jemput" onclick="buatOrder('JEMPUT')">🧺 JEMPUT</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🔥 Pesanan Berjalan</h3>
+                <table style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Pelanggan</th>
+                            <th>Layanan</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listAktif"></tbody>
+                </table>
             </div>
         </div>
 
-        <div class="card">
-            <h3>🔥 Pesanan Berjalan</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th class="col-nama">Nama</th>
-                        <th class="col-layanan">Layanan</th>
-                        <th class="col-status">Status</th>
-                    </tr>
-                </thead>
-                <tbody id="listAktif"></tbody>
-            </table>
-        </div>
+        <div id="tabRekap" style="display:none">
+            <div class="card">
+                <h3>📊 Statistik Driver</h3>
+                <select id="filterBulan" onchange="renderSemua()">
+                    <option value="0">Januari</option><option value="1">Februari</option>
+                    <option value="2">Maret</option><option value="3">April</option>
+                    <option value="4">Mei</option><option value="5">Juni</option>
+                    <option value="6">Juli</option><option value="7">Agustus</option>
+                    <option value="8">September</option><option value="9">Oktober</option>
+                    <option value="10">November</option><option value="11">Desember</option>
+                </select>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Driver</th>
+                            <th>Antar</th>
+                            <th>Jemput</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="isiRekap"></tbody>
+                </table>
+            </div>
 
-        <div class="card">
-            <h3>📜 Riwayat Selesai</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th class="col-nama">Nama</th>
-                        <th class="col-layanan">Info</th>
-                        <th class="col-status">Waktu</th>
-                    </tr>
-                </thead>
-                <tbody id="listHistory"></tbody>
-            </table>
+            <div class="card">
+                <h3>📜 Riwayat Pesanan Selesai</h3>
+                <table style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Pelanggan</th>
+                            <th>Driver</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listHistory"></tbody>
+                </table>
+            </div>
         </div>
 
         <button class="btn logout" onclick="logout()">KELUAR</button>
@@ -177,120 +185,97 @@ th { background: #f8f9fa; color: #555; font-weight: 600; }
 </div>
 
 <script>
-// --- FIREBASE INITIALIZATION ---
-const firebaseConfig = {
-    apiKey: "AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
-    databaseURL: "https://awwabim-laundry-default-rtdb.firebaseio.com"
-};
+const firebaseConfig = { apiKey: "AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU", databaseURL: "https://awwabim-laundry-default-rtdb.firebaseio.com" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database().ref("Pesanan");
 
-// --- DOM ELEMENTS ---
-const inpNama = document.getElementById("nama");
-const inpWa = document.getElementById("wa");
+document.getElementById('filterBulan').value = new Date().getMonth();
 
-// --- UI FUNCTIONS ---
-function showToast(msg, color="#27ae60"){
-    const box = document.getElementById("toast-box");
-    const el = document.createElement("div");
-    el.className = "toast";
-    el.innerText = msg;
-    el.style.background = color;
-    box.appendChild(el);
-    setTimeout(()=> el.remove(), 3000);
+function switchTab(tab) {
+    document.getElementById('tabOrder').style.display = tab === 'order' ? 'block' : 'none';
+    document.getElementById('tabRekap').style.display = tab === 'rekap' ? 'block' : 'none';
+    document.getElementById('btnOrder').classList.toggle('active', tab === 'order');
+    document.getElementById('btnRekap').classList.toggle('active', tab === 'rekap');
+    renderSemua();
 }
 
-// --- CORE LOGIC: KONTAK HP ---
-async function pilihKontak() {
-    const supported = ('contacts' in navigator && 'ContactsManager' in window);
-    
-    if (supported) {
-        const props = ['name', 'tel'];
-        const options = { multiple: false };
+function renderSemua() {
+    db.once("value", snap => {
+        const data = [];
+        snap.forEach(c => { data.push(c.val()); });
+        
+        const selectedMonth = parseInt(document.getElementById('filterBulan').value);
+        const stats = {};
+        
+        const listAktif = document.getElementById('listAktif');
+        const listHistory = document.getElementById('listHistory');
+        const isiRekap = document.getElementById('isiRekap');
+        
+        listAktif.innerHTML = "";
+        listHistory.innerHTML = "";
+        isiRekap.innerHTML = "";
 
-        try {
-            const contacts = await navigator.contacts.select(props, options);
-            if (contacts.length > 0) {
-                const contact = contacts[0];
-                // Isi Nama jika tersedia
-                if (contact.name && contact.name.length > 0) {
-                    inpNama.value = contact.name[0];
+        // Sort data terbaru di atas
+        const sortedData = [...data].reverse();
+
+        sortedData.forEach(d => {
+            // 1. PESANAN BERJALAN (Bukan Selesai)
+            if(d.status !== "SELESAI") {
+                let badgeColor = d.status === "MENUNGGU_DRIVER" ? "bg-orange" : "bg-blue";
+                listAktif.innerHTML += `<tr>
+                    <td><b>${d.nama}</b></td>
+                    <td><span class="badge ${d.layanan === 'ANTAR' ? 'bg-blue' : 'bg-green'}">${d.layanan}</span></td>
+                    <td><span class="badge ${badgeColor}">${d.status.replace('_', ' ')}</span></td>
+                </tr>`;
+            } 
+            // 2. PESANAN SELESAI (Masuk Rekap & History)
+            else if(d.status === "SELESAI" && d.selesai) {
+                const tgl = new Date(d.selesai);
+                if(tgl.getMonth() === selectedMonth) {
+                    // Hitung Statistik
+                    const drv = d.driverName || "Tanpa Nama";
+                    if(!stats[drv]) stats[drv] = { antar: 0, jemput: 0 };
+                    if(d.layanan === "ANTAR") stats[drv].antar++;
+                    else stats[drv].jemput++;
+
+                    // Masukkan ke Tabel History
+                    const waktu = tgl.toLocaleDateString('id-ID', {day:'numeric', month:'short'}) + " " + tgl.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                    listHistory.innerHTML += `<tr>
+                        <td><small>${waktu}</small></td>
+                        <td><b>${d.nama}</b><br><span class="badge ${d.layanan === 'ANTAR' ? 'bg-blue' : 'bg-green'}">${d.layanan}</span></td>
+                        <td><small>${drv}</small></td>
+                    </tr>`;
                 }
-                // Isi Nomor Telepon & bersihkan karakter non-angka
-                if (contact.tel && contact.tel.length > 0) {
-                    let cleanNum = contact.tel[0].replace(/\D/g, '');
-                    // Ubah 08 ke 62
-                    if (cleanNum.startsWith('0')) cleanNum = '62' + cleanNum.slice(1);
-                    inpWa.value = cleanNum;
-                }
-                showToast("Kontak berhasil diambil!", "#27ae60");
             }
-        } catch (err) {
-            console.log(err);
-            showToast("Gagal mengakses kontak", "#e74c3c");
+        });
+
+        // Render hasil hitungan statistik ke tabel rekap
+        for(let name in stats) {
+            isiRekap.innerHTML += `<tr>
+                <td><b>${name}</b></td>
+                <td>${stats[name].antar}</td>
+                <td>${stats[name].jemput}</td>
+                <td><b>${stats[name].antar + stats[name].jemput}</b></td>
+            </tr>`;
         }
-    } else {
-        // Fallback jika browser tidak mendukung (seperti iPhone atau Desktop)
-        showToast("Fitur ini belum didukung di perangkat ini. Silakan ketik manual.", "#f39c12");
-        inpWa.focus();
-    }
+    });
 }
 
-// --- AUTH & ORDER (Sama dengan sebelumnya) ---
-function doLogin(){
-    const n = document.getElementById("adminName").value.trim();
-    if(!n) return showToast("Nama admin wajib diisi!", "#e74c3c");
-    localStorage.setItem("admin", n);
-    checkAuth();
-}
+db.on("value", renderSemua);
 
-function checkAuth(){
-    const user = localStorage.getItem("admin");
-    if(user){
-        document.getElementById("loginBox").style.display = "none";
-        document.getElementById("app").style.display = "block";
-        document.getElementById("headerBar").style.display = "flex";
-        document.getElementById("dispName").innerText = user;
-        document.getElementById("dispImg").src = `https://ui-avatars.com/api/?name=${user}&background=random&color=fff`;
-    }
-}
-checkAuth(); 
-
+function showToast(m){ const b=document.getElementById("toast-box"); const e=document.createElement("div"); e.className="toast"; e.innerText=m; b.appendChild(e); setTimeout(()=>e.remove(),3000); }
+function doLogin(){ const n=document.getElementById("adminName").value; if(n){ localStorage.setItem("admin",n); checkAuth(); } }
+function checkAuth(){ const u=localStorage.getItem("admin"); if(u){ document.getElementById("loginBox").style.display="none"; document.getElementById("app").style.display="block"; document.getElementById("headerBar").style.display="flex"; document.getElementById("dispName").innerText=u; document.getElementById("dispImg").src=`https://ui-avatars.com/api/?name=${u}`; } }
+checkAuth();
 function logout(){ localStorage.clear(); location.reload(); }
-
-function buatOrder(layanan){
-    const nama = inpNama.value.trim();
-    let wa = inpWa.value.replace(/\D/g,'');
-    if(!nama || !wa) return showToast("Lengkapi data dulu!", "#e74c3c");
-    if(wa.startsWith("0")) wa = "62" + wa.slice(1);
-
-    db.push({
-        nama: nama, wa: wa, layanan: layanan,
-        status: "MENUNGGU_DRIVER", driverName: "",
-        mulai: firebase.database.ServerValue.TIMESTAMP
-    });
-
-    inpNama.value = ""; inpWa.value = "";
-    showToast(`Order ${layanan} berhasil dibuat!`);
+async function pilihKontak(){ if('contacts' in navigator){ try{ const c=await navigator.contacts.select(['name','tel']); if(c.length){ document.getElementById('nama').value=c[0].name[0]; document.getElementById('wa').value=c[0].tel[0].replace(/\D/g,''); } }catch(e){}} }
+function buatOrder(l){
+    const n=document.getElementById('nama').value; let w=document.getElementById('wa').value.replace(/\D/g,'');
+    if(!n||!w) return; if(w.startsWith('0')) w='62'+w.slice(1);
+    db.push({ nama:n, wa:w, layanan:l, status:"MENUNGGU_DRIVER", mulai:firebase.database.ServerValue.TIMESTAMP });
+    document.getElementById('nama').value=""; document.getElementById('wa').value="";
+    showToast("Pesanan Berhasil Dibuat!");
 }
-
-// --- REALTIME LISTENER ---
-db.on("value", snap => {
-    const tAktif = document.getElementById("listAktif");
-    const tHistory = document.getElementById("listHistory");
-    tAktif.innerHTML = ""; tHistory.innerHTML = "";
-    const dataArray = [];
-    snap.forEach(child => { dataArray.push(child.val()); });
-    dataArray.reverse().forEach(d => {
-        const drv = d.driverName ? `<span class="driver-info">Driver: ${d.driverName}</span>` : "";
-        if(d.status === "SELESAI"){
-            const waktu = d.selesai ? new Date(d.selesai).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "-";
-            tHistory.innerHTML += `<tr><td>${d.nama}</td><td><b>${d.layanan}</b><br>${drv}</td><td>${waktu}</td></tr>`;
-        } else {
-            tAktif.innerHTML += `<tr><td>${d.nama}</td><td><b>${d.layanan}</b></td><td><span class="badge ${d.status}">${d.status.replace("_"," ")}</span>${drv}</td></tr>`;
-        }
-    });
-});
 </script>
 </body>
 </html>
