@@ -3,15 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DRIVER AWWABIN</title>
+<title>DRIVER AWWABIM</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-/* (Styles tetap sama seperti sebelumnya) */
-
 /* --- BASE STYLE --- */
 * { box-sizing: border-box; outline: none; }
 body {
@@ -23,7 +21,7 @@ body {
 }
 .container { max-width: 600px; margin: auto; padding: 15px; padding-top: 80px; }
 
-/* --- HEADER PROFIL (Fixed Top) --- */
+/* --- HEADER PROFIL --- */
 .header-bar {
     position: fixed; top: 0; left: 0; right: 0;
     background: #fff; padding: 10px 20px;
@@ -35,29 +33,51 @@ body {
 .user-profile { display: flex; align-items: center; gap: 10px; }
 .user-name { font-size: 14px; font-weight: 600; text-align: right; }
 .user-role { font-size: 11px; color: #888; display: block; }
-.avatar {
-    width: 40px; height: 40px; border-radius: 50%;
-    border: 2px solid #11998e;
+.avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #11998e; }
+
+/* --- TABS NAVIGATION --- */
+.tab-nav {
+    display: flex;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 5px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    gap: 5px;
+}
+.tab-btn {
+    flex: 1; padding: 12px; border: none; border-radius: 12px;
+    background: transparent; color: #fff; font-weight: 600; cursor: pointer;
+}
+.tab-btn.active {
+    background: #fff; color: #11998e; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 /* --- COMPONENTS --- */
 .card {
     background: #fff; border-radius: 16px; padding: 20px;
     margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    position: relative; overflow: hidden;
 }
 .card.wait { border-left: 6px solid #f1c40f; }
 .card.process { border-left: 6px solid #3498db; }
 .card.done { border-left: 6px solid #bdc3c7; opacity: 0.9; }
 
 h3 { margin: 0 0 10px 0; font-size: 1.1rem; display: flex; align-items: center; justify-content: space-between; }
-p { margin: 5px 0; color: #666; font-size: 14px; }
 .big-name { font-size: 18px; font-weight: bold; color: #000; }
 
-input {
-    width: 100%; padding: 16px; font-size: 16px;
+input, select {
+    width: 100%; padding: 15px; font-size: 16px;
     border-radius: 12px; border: 2px solid #ddd; margin-bottom: 15px;
 }
+
+/* --- REKAP BOX --- */
+.rekap-summary {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;
+}
+.rekap-box {
+    background: #fff; padding: 15px; border-radius: 12px; text-align: center;
+}
+.rekap-num { font-size: 24px; font-weight: 700; color: #11998e; display: block; }
+.rekap-label { font-size: 11px; color: #888; text-transform: uppercase; }
 
 /* --- BUTTONS --- */
 .btn {
@@ -67,57 +87,27 @@ input {
     margin-top: 10px; display: block; text-decoration: none;
 }
 .btn-login { background: #27ae60; }
-.btn-logout { background: #e74c3c; margin-top: 30px; font-size: 14px; }
-
-/* Grid Action */
-.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+.btn-logout { background: #e74c3c; margin-top: 30px; }
 .wa { background: #25D366; }
 .tel { background: #2980b9; }
+.siap { background: #f39c12; }
+.selesai { background: #27ae60; }
 
-.main-action { 
-    margin-top: 15px; padding: 16px; font-size: 18px; letter-spacing: 1px;
-    text-transform: uppercase;
-}
-.siap { background: #f39c12; color: #fff; }
-.selesai { background: #27ae60; color: #fff; }
+.empty-state { text-align: center; color: #fff; margin-top: 50px; }
+.empty-icon { font-size: 50px; display: block; margin-bottom: 10px; }
 
-/* --- EMPTY STATE (CENTER & BRIGHT) --- */
-.empty-wrapper {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    display: flex; justify-content: center; align-items: center; pointer-events: none;
-}
-.empty-state {
-    text-align: center; color: #fff;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    margin-top: 100px; /* Spacer dari header */
-}
-.empty-icon { font-size: 70px; display: block; margin-bottom: 15px; animation: float 3s ease-in-out infinite; }
-.empty-text { font-size: 22px; font-weight: 700; margin-bottom: 5px; }
-.empty-sub { font-size: 15px; opacity: 0.9; }
-
-@keyframes float { 0%{transform: translateY(0px);} 50%{transform: translateY(-10px);} 100%{transform: translateY(0px);} }
-
-/* --- TOAST --- */
 #toast-box { position: fixed; top: 80px; right: 20px; z-index: 9999; }
-.toast {
-    background: #333; color: #fff; padding: 12px 20px;
-    border-radius: 8px; margin-bottom: 10px; font-size: 14px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    animation: slideIn 0.3s, fadeOut 0.5s 2.5s forwards;
-}
+.toast { background: #333; color: #fff; padding: 12px 20px; border-radius: 8px; margin-bottom: 10px; animation: slideIn 0.3s; }
 @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-@keyframes fadeOut { to { opacity: 0; } }
-
-#loginBox { margin-top: 50px; }
 </style>
 </head>
 
 <body>
 <div id="toast-box"></div>
-
 <audio id="notifSound" src="https://assets.mixkit.co/sfx/download/mixkit-software-notification-2591.wav" preload="auto"></audio> 
+
 <div id="headerBar" class="header-bar" style="display:none">
-    <div class="brand">DRIVER APP</div>
+    <div class="brand">DRIVER AWWABIM</div>
     <div class="user-profile">
         <div>
             <div class="user-name" id="dispName">Driver</div>
@@ -128,7 +118,6 @@ input {
 </div>
 
 <div class="container">
-
     <div class="card" id="loginBox">
         <h3>🛵 Login Driver</h3>
         <input id="driverName" placeholder="Nama Driver" autocomplete="off">
@@ -136,57 +125,144 @@ input {
     </div>
 
     <div id="app" style="display:none">
-        
-        <div id="listAktif"></div>
-        
-        <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.5); margin: 30px 0;">
-        
-        <h4 style="color:#fff; text-align:center; margin-bottom:15px; text-shadow:0 1px 2px rgba(0,0,0,0.2)">RIWAYAT TERAKHIR</h4>
-        <div id="listHistory"></div>
+        <div class="tab-nav">
+            <button id="btnOrder" class="tab-btn active" onclick="switchTab('order')">🛵 ORDER AKTIF</button>
+            <button id="btnRekap" class="tab-btn" onclick="switchTab('rekap')">📊 REKAP SAYA</button>
+        </div>
 
-        <button class="btn btn-logout" onclick="logout()">LOGOUT</button>
+        <div id="tabOrder">
+            <div id="listAktif"></div>
+        </div>
+
+        <div id="tabRekap" style="display:none">
+            <select id="filterBulan" onchange="renderData()">
+                <option value="0">Januari</option><option value="1">Februari</option>
+                <option value="2">Maret</option><option value="3">April</option>
+                <option value="4">Mei</option><option value="5">Juni</option>
+                <option value="6">Juli</option><option value="7">Agustus</option>
+                <option value="8">September</option><option value="9">Oktober</option>
+                <option value="10">November</option><option value="11">Desember</option>
+            </select>
+
+            <div class="rekap-summary">
+                <div class="rekap-box">
+                    <span class="rekap-num" id="countAntar">0</span>
+                    <span class="rekap-label">Total Antar</span>
+                </div>
+                <div class="rekap-box">
+                    <span class="rekap-num" id="countJemput">0</span>
+                    <span class="rekap-label">Total Jemput</span>
+                </div>
+            </div>
+
+            <div id="listHistory"></div>
+        </div>
+
+        <button class="btn btn-logout" onclick="logout()">KELUAR APLIKASI</button>
     </div>
-
 </div>
 
 <script>
-// --- GLOBAL VARIABLE UNTUK PELACAKAN STATUS ---
-let previousActiveCount = 0; // Melacak jumlah pesanan aktif sebelumnya
-let initialLoad = true;      // Flag untuk mencegah suara berbunyi saat pertama kali dimuat
-
-// --- FIREBASE ---
-const firebaseConfig = {
-    apiKey: "AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
-    databaseURL: "https://awwabim-laundry-default-rtdb.firebaseio.com"
-};
+let previousActiveCount = 0;
+let initialLoad = true;
+const firebaseConfig = { apiKey: "AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU", databaseURL: "https://awwabim-laundry-default-rtdb.firebaseio.com" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database().ref("Pesanan");
 
-// --- DOM & AUDIO ---
-const loginBox = document.getElementById("loginBox");
-const app = document.getElementById("app");
-const headerBar = document.getElementById("headerBar");
-const dispName = document.getElementById("dispName");
-const dispImg = document.getElementById("dispImg");
-const divAktif = document.getElementById("listAktif");
-const divHistory = document.getElementById("listHistory");
-const notifSound = document.getElementById("notifSound"); // Ambil elemen audio
+document.getElementById('filterBulan').value = new Date().getMonth();
 
-// --- TOAST ---
+function switchTab(tab) {
+    document.getElementById('tabOrder').style.display = tab === 'order' ? 'block' : 'none';
+    document.getElementById('tabRekap').style.display = tab === 'rekap' ? 'block' : 'none';
+    document.getElementById('btnOrder').classList.toggle('active', tab === 'order');
+    document.getElementById('btnRekap').classList.toggle('active', tab === 'rekap');
+}
+
 function showToast(msg, color="#27ae60"){
     const box = document.getElementById("toast-box");
     const el = document.createElement("div");
     el.className = "toast";
-    el.innerText = msg;
-    el.style.background = color;
+    el.innerText = msg; el.style.background = color;
     box.appendChild(el);
     setTimeout(()=> el.remove(), 3000);
 }
 
-// --- LOGIN ---
+function renderData() {
+    const currentUser = localStorage.getItem("driver");
+    const selectedMonth = parseInt(document.getElementById('filterBulan').value);
+    
+    db.once("value", snap => {
+        const listAktif = document.getElementById("listAktif");
+        const listHistory = document.getElementById("listHistory");
+        listAktif.innerHTML = "";
+        listHistory.innerHTML = "";
+
+        let cAntar = 0, cJemput = 0, activeCount = 0;
+        const dataArray = [];
+        snap.forEach(child => { dataArray.push({ key: child.key, ...child.val() }); });
+        dataArray.reverse();
+
+        dataArray.forEach(d => {
+            // LOGIK REKAP (Hanya milik driver ini & bulan terpilih)
+            if(d.status === "SELESAI" && d.driverName === currentUser) {
+                const tgl = new Date(d.selesai);
+                if(tgl.getMonth() === selectedMonth) {
+                    if(d.layanan === "ANTAR") cAntar++; else cJemput++;
+                    
+                    listHistory.innerHTML += `
+                    <div class="card done">
+                        <div style="display:flex; justify-content:space-between">
+                            <small>${new Date(d.selesai).toLocaleDateString('id-ID', {day:'numeric', month:'short'})}</small>
+                            <small><b>${d.layanan}</b></small>
+                        </div>
+                        <div class="big-name" style="font-size:15px; margin-top:5px">${d.nama}</div>
+                    </div>`;
+                }
+            } 
+            // LOGIK ORDER AKTIF (Pesanan baru ATAU pesanan yang sedang diambil driver ini)
+            else if(d.status !== "SELESAI") {
+                if(d.status === "MENUNGGU_DRIVER" || d.driverName === currentUser) {
+                    activeCount++;
+                    const time = new Date(d.mulai).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    let btnMain = d.status === "MENUNGGU_DRIVER" 
+                        ? `<button class="btn main-action siap" onclick="ambilOrder('${d.key}','${d.layanan}')">🚀 AMBIL ORDER</button>`
+                        : `<button class="btn main-action selesai" onclick="selesai('${d.key}')">✅ SELESAIKAN</button>`;
+
+                    listAktif.innerHTML += `
+                    <div class="card ${d.status === 'MENUNGGU_DRIVER' ? 'wait' : 'process'}">
+                        <h3><span>${d.layanan}</span> <small>${time}</small></h3>
+                        <div class="big-name">${d.nama}</div>
+                        <p>WA: ${d.wa}</p>
+                        <div style="display:flex; gap:10px">
+                            <a class="btn wa" href="https://wa.me/${d.wa}">💬</a>
+                            <a class="btn tel" href="tel:${d.wa}">📞</a>
+                        </div>
+                        ${btnMain}
+                    </div>`;
+                }
+            }
+        });
+
+        document.getElementById('countAntar').innerText = cAntar;
+        document.getElementById('countJemput').innerText = cJemput;
+
+        if(!initialLoad && activeCount > previousActiveCount) {
+            document.getElementById("notifSound").play().catch(() => {});
+            showToast("🔔 ORDER BARU TERSEDIA!", "#f1c40f");
+        }
+        previousActiveCount = activeCount;
+        initialLoad = false;
+
+        if(activeCount === 0) listAktif.innerHTML = `<div class="empty-state"><span class="empty-icon">☕</span><b>Belum ada order</b></div>`;
+    });
+}
+
+// Sinkronisasi Realtime
+db.on("value", renderData);
+
 function doLogin(){
     const n = document.getElementById("driverName").value.trim();
-    if(!n) return showToast("Nama Driver wajib diisi!", "#e74c3c");
+    if(!n) return showToast("Nama wajib diisi!", "#e74c3c");
     localStorage.setItem("driver", n);
     checkAuth();
 }
@@ -194,145 +270,27 @@ function doLogin(){
 function checkAuth(){
     const user = localStorage.getItem("driver");
     if(user){
-        loginBox.style.display = "none";
-        app.style.display = "block";
-        headerBar.style.display = "flex";
-        
-        // Header Info
-        dispName.innerText = user;
-        dispImg.src = `https://ui-avatars.com/api/?name=${user}&background=random&color=fff`;
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("app").style.display = "block";
+        document.getElementById("headerBar").style.display = "flex";
+        document.getElementById("dispName").innerText = user;
+        document.getElementById("dispImg").src = `https://ui-avatars.com/api/?name=${user}&background=11998e&color=fff`;
     }
 }
 checkAuth();
 
-function logout(){
-    localStorage.clear();
-    location.reload();
-}
-
-// --- LOGIC PLAY SOUND ---
-function playNotifSound() {
-    // Memastikan suara dapat diputar (browser memerlukan interaksi pengguna sebelum memutar media)
-    if (notifSound) {
-        notifSound.play().catch(error => {
-            console.log("Audio play prevented:", error);
-            // Anda dapat menambahkan instruksi kepada pengguna untuk mengklik layar
-            // jika notifikasi suara tidak berbunyi secara otomatis.
-        });
-    }
-}
-
-// --- LOGIC REALTIME FIREBASE ---
-db.on("value", snap => {
-    divAktif.innerHTML = "";
-    divHistory.innerHTML = "";
-
-    const dataArray = [];
-    snap.forEach(child => {
-        dataArray.push({ key: child.key, ...child.val() });
-    });
-    dataArray.reverse();
-
-    let currentActiveCount = 0; // Hitung pesanan aktif saat ini
-
-    dataArray.forEach(d => {
-        const time = new Date(d.mulai).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        const drvName = d.driverName ? `(${d.driverName})` : "";
-        
-        if(d.status === "SELESAI"){
-            const timeEnd = d.selesai ? new Date(d.selesai).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "-";
-            divHistory.innerHTML += `
-            <div class="card done">
-                <div style="display:flex; justify-content:space-between; align-items:center">
-                    <span style="font-weight:bold; color:#7f8c8d">${d.layanan} ${drvName}</span>
-                    <small style="color:#95a5a6">${time} - ${timeEnd}</small>
-                </div>
-                <div class="big-name" style="color:#555">${d.nama}</div>
-                <div style="font-size:12px; color:#27ae60; margin-top:5px">✅ SELESAI</div>
-            </div>`;
-        } else {
-            currentActiveCount++; // Tambah hitungan pesanan aktif
-            
-            let btnMain = "";
-            let statusClass = "wait";
-            
-            if(d.status === "MENUNGGU_DRIVER"){
-                btnMain = `<button class="btn main-action siap" onclick="ambilOrder('${d.key}','${d.layanan}')">🚀 AMBIL ORDER</button>`;
-            } else {
-                statusClass = "process";
-                btnMain = `<button class="btn main-action selesai" onclick="selesai('${d.key}')">✅ SELESAIKAN</button>`;
-            }
-
-            const iconLayanan = d.layanan === "ANTAR" ? "🛵 ANTAR" : "🧺 JEMPUT";
-
-            divAktif.innerHTML += `
-            <div class="card ${statusClass}">
-                <h3>
-                    <span>${iconLayanan}</span>
-                    <small style="font-weight:normal; font-size:12px">${time}</small>
-                </h3>
-                <div class="big-name">${d.nama}</div>
-                <p>WhatsApp: ${d.wa}</p>
-                <p style="font-size:12px; color:#666">Status: ${d.status.replace("_"," ")} ${drvName}</p>
-                
-                <div class="action-grid">
-                    <a class="btn wa" href="https://wa.me/${d.wa}" target="_blank">💬 CHAT</a>
-                    <a class="btn tel" href="tel:${d.wa}">📞 TELEPON</a>
-                </div>
-                ${btnMain}
-            </div>`;
-        }
-    });
-
-    // --- LOGIKA NOTIFIKASI SUARA ---
-    if (!initialLoad && currentActiveCount > previousActiveCount) {
-        // Jika jumlah pesanan aktif bertambah setelah loading awal
-        playNotifSound();
-        showToast("🔔 PESANAN BARU MASUK!", "#f1c40f");
-    }
-    
-    // Update hitungan untuk siklus berikutnya
-    previousActiveCount = currentActiveCount;
-    initialLoad = false;
-    // --- END LOGIKA NOTIFIKASI SUARA ---
-
-
-    // EMPTY STATE (CENTER & BRIGHT)
-    if(currentActiveCount === 0){
-        divAktif.innerHTML = `
-        <div class="empty-state">
-            <span class="empty-icon">☕</span>
-            <div class="empty-text">BELUM ADA PESANAN</div>
-            <div class="empty-sub">Santai sejenak bro...</div>
-        </div>`;
-    }
-    
-    if(!divHistory.innerHTML){
-        divHistory.innerHTML = `<div style="text-align:center; color:#fff; opacity:0.7; font-size:12px">Belum ada riwayat</div>`;
-    }
-});
+function logout(){ localStorage.clear(); location.reload(); }
 
 function ambilOrder(key, layanan){
-    const drvName = localStorage.getItem("driver");
-    const newStatus = layanan === "ANTAR" ? "SEDANG_DIANTAR" : "SEDANG_DIJEMPUT";
-    
-    db.child(key).update({ 
-        status: newStatus,
-        driverName: drvName
-    });
-
-    showToast("Langsung OTW! 🚀", "#f39c12");
+    const drv = localStorage.getItem("driver");
+    const stat = layanan === "ANTAR" ? "SEDANG_DIANTAR" : "SEDANG_DIJEMPUT";
+    db.child(key).update({ status: stat, driverName: drv });
 }
 
 function selesai(key){
-    db.child(key).update({
-        status: "SELESAI",
-        selesai: firebase.database.ServerValue.TIMESTAMP
-    });
-
-    showToast("Pekerjaan Selesai! Alhamdulillah 🤲", "#27ae60");
+    db.child(key).update({ status: "SELESAI", selesai: firebase.database.ServerValue.TIMESTAMP });
+    showToast("Alhamdulillah, Selesai!");
 }
 </script>
 </body>
 </html>
-
