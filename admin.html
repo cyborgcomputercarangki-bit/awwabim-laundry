@@ -3,280 +3,278 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ADMIN AWWABIM LAUNDRY</title>
+<title>ADMIN AWWABIM</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
 
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
 <style>
-body{
- margin:0;
- font-family:Segoe UI,Arial;
- background:linear-gradient(135deg,#fceabb,#f8b500);
+/* --- BASE STYLE --- */
+* { box-sizing: border-box; outline: none; }
+body {
+    margin: 0; padding: 0; 
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #FF9966, #FF5E62);
+    color: #333;
+    min-height: 100vh;
 }
-.container{
- max-width:1000px;
- margin:auto;
- background:#fff;
- padding:15px;
- border-radius:12px;
+.container { max-width: 800px; margin: auto; padding: 15px; padding-top: 80px; }
+
+/* --- HEADER PROFIL --- */
+.header-bar {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: #fff; padding: 10px 20px;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 100;
+}
+.brand { font-weight: 700; color: #FF5E62; font-size: 18px; }
+.user-profile { display: flex; align-items: center; gap: 10px; }
+.user-name { font-size: 14px; font-weight: 600; text-align: right; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #FF5E62; }
+
+/* --- TABS NAVIGATION --- */
+.tab-nav {
+    display: flex; background: rgba(255, 255, 255, 0.2);
+    padding: 5px; border-radius: 15px; margin-bottom: 20px; gap: 5px;
+}
+.tab-btn {
+    flex: 1; padding: 12px; border: none; border-radius: 12px;
+    background: transparent; color: #fff; font-weight: 600; cursor: pointer;
+}
+.tab-btn.active {
+    background: #fff; color: #FF5E62; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* HEADER */
-.header{
- text-align:center;
- font-size:1.3em;
- font-weight:bold;
- color:#2c3e50;
- margin-bottom:10px;
+/* --- CARD STYLE --- */
+.card {
+    background: #fff; border-radius: 16px; padding: 20px;
+    margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+h3 { margin-top: 0; margin-bottom: 15px; color: #444; font-size: 1.1rem; }
+
+/* --- INPUTS & SELECT --- */
+input, select {
+    width: 100%; padding: 15px; font-size: 16px;
+    border-radius: 12px; border: 2px solid #eee; margin-bottom: 15px;
+    background: #fafafa;
 }
 
-/* NAV */
-.main-nav{
- display:flex;
- gap:10px;
- overflow-x:auto;
- margin-bottom:10px;
-}
-.nav-item{
- padding:8px 12px;
- font-weight:bold;
- color:#555;
- text-decoration:none;
-}
-.nav-item.active{
- color:#e67e22;
- border-bottom:3px solid #e67e22;
-}
+/* --- TABLE --- */
+table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
+th { background: #f8f9fa; color: #555; }
 
-.tab-content{display:none}
-.tab-content.active{display:block}
+/* --- BUTTONS --- */
+.btn {
+    width: 100%; padding: 15px; font-size: 16px;
+    border: none; border-radius: 12px; color: #fff; font-weight: 600; cursor: pointer;
+}
+.antar { background: #3498db; }
+.jemput { background: #27ae60; }
+.pilih-kontak { background: #5f27cd; margin-bottom: 15px; font-size: 14px; }
+.btn-group { display: flex; gap: 10px; margin-top: 10px; }
+.logout { background: #e74c3c; margin-top: 20px; }
 
-/* FORM */
-form{display:flex;flex-direction:column;gap:10px}
-input{
- padding:10px;
- border-radius:6px;
- border:1px solid #ccc;
-}
-
-.btn-group{display:flex;gap:10px}
-.btn{
- flex:1;
- padding:12px;
- border:none;
- color:#fff;
- font-weight:bold;
- border-radius:6px;
-}
-.btn-jemput{background:#27ae60}
-.btn-antar{background:#3498db}
-
-/* STATUS BAR */
-.info-status{
- display:none;
- margin-top:8px;
- padding:10px;
- border-radius:6px;
- font-weight:bold;
- text-align:center;
-}
-.info-jemput{
- background:#e9f7ef;
- color:#27ae60;
- border:1px solid #27ae60;
-}
-.info-antar{
- background:#eaf2fb;
- color:#3498db;
- border:1px solid #3498db;
-}
-
-/* TABLE */
-.table-wrapper{width:100%;overflow-x:auto}
-table{width:100%;border-collapse:collapse}
-th,td{
- padding:8px;
- border-bottom:1px solid #eee;
- font-size:.9em;
-}
-th{background:#2c3e50;color:#fff}
-
-.btn-selesai{
- background:#27ae60;
- color:#fff;
- border:none;
- padding:6px 10px;
- border-radius:4px;
-}
-
-@media(max-width:600px){
- .btn-group{flex-direction:column}
-}
+/* --- TOAST & BADGE --- */
+#toast-box { position: fixed; top: 80px; right: 20px; z-index: 9999; }
+.toast { background: #333; color: #fff; padding: 10px 20px; border-radius: 8px; margin-bottom: 10px; animation: slideIn 0.3s forwards; }
+@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+.badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; color: white; }
+.bg-blue { background: #3498db; }
+.bg-green { background: #27ae60; }
+.bg-orange { background: #f39c12; }
+.bg-gray { background: #95a5a6; }
 </style>
 </head>
 
 <body>
+<div id="toast-box"></div> 
+
+<div id="headerBar" class="header-bar" style="display:none">
+    <div class="brand">ADMIN AWWABIM</div>
+    <div class="user-profile">
+        <div class="user-name" id="dispName">Admin</div>
+        <img id="dispImg" src="" class="avatar">
+    </div>
+</div>
+
 <div class="container">
+    <div class="card" id="loginBox">
+        <h3>🔐 Login Admin</h3>
+        <input id="adminName" placeholder="Nama Admin">
+        <button class="btn jemput" onclick="doLogin()">MASUK DASHBOARD</button>
+    </div>
 
-<div class="header">ADMIN AWWABIM LAUNDRY</div>
+    <div id="app" style="display:none">
+        <div class="tab-nav">
+            <button id="btnOrder" class="tab-btn active" onclick="switchTab('order')">📝 ORDER</button>
+            <button id="btnRekap" class="tab-btn" onclick="switchTab('rekap')">📊 REKAP & HISTORY</button>
+        </div>
 
-<nav class="main-nav">
- <a href="#" class="nav-item active" data-tab="input">Order Baru</a>
- <a href="#" class="nav-item" data-tab="aktif">Pesanan Aktif</a>
- <a href="#" class="nav-item" data-tab="history">History</a>
-</nav>
+        <div id="tabOrder">
+            <div class="card">
+                <h3>📝 Buat Order Baru</h3>
+                <input id="nama" placeholder="Nama Pelanggan">
+                <input id="wa" placeholder="WhatsApp (Contoh: 0812...)" type="tel"> 
+                <button class="btn pilih-kontak" onclick="pilihKontak()">👤 AMBIL DARI KONTAK</button>
+                <div class="btn-group">
+                    <button class="btn antar" onclick="buatOrder('ANTAR')">🛵 ANTAR</button>
+                    <button class="btn jemput" onclick="buatOrder('JEMPUT')">🧺 JEMPUT</button>
+                </div>
+            </div>
 
-<div id="input" class="tab-content active">
-<form id="form">
- <input id="nama" placeholder="Nama pelanggan">
- <input id="wa" placeholder="WhatsApp (08xxx)">
- <input id="driver" placeholder="Nama driver">
- <div class="btn-group">
-  <button type="button" class="btn btn-jemput" onclick="simpan('JEMPUT')">🧺 JEMPUT</button>
-  <button type="button" class="btn btn-antar" onclick="simpan('ANTAR')">🚚 ANTAR</button>
- </div>
- <div id="info" class="info-status"></div>
-</form>
-</div>
+            <div class="card">
+                <h3>🔥 Pesanan Berjalan</h3>
+                <table style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Pelanggan</th>
+                            <th>Layanan</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listAktif"></tbody>
+                </table>
+            </div>
+        </div>
 
-<div id="aktif" class="tab-content">
-<div class="table-wrapper">
-<table>
-<thead>
-<tr>
- <th>Waktu</th>
- <th>Pelanggan</th>
- <th>Driver</th>
- <th>Layanan</th>
- <th>Aksi</th>
-</tr>
-</thead>
-<tbody id="listAktif"></tbody>
-</table>
-</div>
-</div>
+        <div id="tabRekap" style="display:none">
+            <div class="card">
+                <h3>📊 Statistik Driver</h3>
+                <select id="filterBulan" onchange="renderSemua()">
+                    <option value="0">Januari</option><option value="1">Februari</option>
+                    <option value="2">Maret</option><option value="3">April</option>
+                    <option value="4">Mei</option><option value="5">Juni</option>
+                    <option value="6">Juli</option><option value="7">Agustus</option>
+                    <option value="8">September</option><option value="9">Oktober</option>
+                    <option value="10">November</option><option value="11">Desember</option>
+                </select>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Driver</th>
+                            <th>Antar</th>
+                            <th>Jemput</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="isiRekap"></tbody>
+                </table>
+            </div>
 
-<div id="history" class="tab-content">
-<div class="table-wrapper">
-<table>
-<thead>
-<tr>
- <th>Waktu & Tanggal</th>
- <th>Pelanggan</th>
- <th>Driver</th>
- <th>Layanan</th>
- <th>Status</th>
-</tr>
-</thead>
-<tbody id="listHistory"></tbody>
-</table>
-</div>
-</div>
+            <div class="card">
+                <h3>📜 Riwayat Pesanan Selesai</h3>
+                <table style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Pelanggan</th>
+                            <th>Driver</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listHistory"></tbody>
+                </table>
+            </div>
+        </div>
 
+        <button class="btn logout" onclick="logout()">KELUAR</button>
+    </div>
 </div>
 
 <script>
-/* FIREBASE */
-firebase.initializeApp({
- apiKey:"AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
- databaseURL:"https://awwabim-laundry-default-rtdb.firebaseio.com/"
-});
-const db=firebase.database().ref("pesanan");
+const firebaseConfig = { apiKey: "AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU", databaseURL: "https://awwabim-laundry-default-rtdb.firebaseio.com" };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database().ref("Pesanan");
 
-/* NAV */
-document.querySelectorAll(".nav-item").forEach(n=>{
- n.onclick=e=>{
-  e.preventDefault();
-  document.querySelectorAll(".nav-item").forEach(x=>x.classList.remove("active"));
-  n.classList.add("active");
-  document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
-  document.getElementById(n.dataset.tab).classList.add("active");
- }
-});
+document.getElementById('filterBulan').value = new Date().getMonth();
 
-const namaEl=document.getElementById("nama");
-const waEl=document.getElementById("wa");
-const driverEl=document.getElementById("driver");
-const form=document.getElementById("form");
-
-/* SIMPAN */
-function simpan(layanan){
- let nama=namaEl.value.trim();
- let wa=waEl.value.trim();
- let driver=driverEl.value.trim();
- let info=document.getElementById("info");
-
- if(!nama||!wa||!driver){
-  info.style.display="block";
-  info.className="info-status";
-  info.innerText="Semua field wajib diisi";
-  autoHideInfo();
-  return;
- }
-
- if(wa.startsWith("0")) wa="62"+wa.slice(1);
-
- db.push({
-  nama,wa,driver,layanan,
-  status:"MENUNGGU",
-  waktu:Date.now()
- });
-
- info.style.display="block";
- info.className="info-status "+(layanan==="JEMPUT"?"info-jemput":"info-antar");
- info.innerText=`Pesanan ${layanan} berhasil disimpan`;
- autoHideInfo();
- form.reset();
+function switchTab(tab) {
+    document.getElementById('tabOrder').style.display = tab === 'order' ? 'block' : 'none';
+    document.getElementById('tabRekap').style.display = tab === 'rekap' ? 'block' : 'none';
+    document.getElementById('btnOrder').classList.toggle('active', tab === 'order');
+    document.getElementById('btnRekap').classList.toggle('active', tab === 'rekap');
+    renderSemua();
 }
 
-function autoHideInfo(){
- setTimeout(()=>{
-  document.getElementById("info").style.display="none";
- },3000);
+function renderSemua() {
+    db.once("value", snap => {
+        const data = [];
+        snap.forEach(c => { data.push(c.val()); });
+        
+        const selectedMonth = parseInt(document.getElementById('filterBulan').value);
+        const stats = {};
+        
+        const listAktif = document.getElementById('listAktif');
+        const listHistory = document.getElementById('listHistory');
+        const isiRekap = document.getElementById('isiRekap');
+        
+        listAktif.innerHTML = "";
+        listHistory.innerHTML = "";
+        isiRekap.innerHTML = "";
+
+        // Sort data terbaru di atas
+        const sortedData = [...data].reverse();
+
+        sortedData.forEach(d => {
+            // 1. PESANAN BERJALAN (Bukan Selesai)
+            if(d.status !== "SELESAI") {
+                let badgeColor = d.status === "MENUNGGU_DRIVER" ? "bg-orange" : "bg-blue";
+                listAktif.innerHTML += `<tr>
+                    <td><b>${d.nama}</b></td>
+                    <td><span class="badge ${d.layanan === 'ANTAR' ? 'bg-blue' : 'bg-green'}">${d.layanan}</span></td>
+                    <td><span class="badge ${badgeColor}">${d.status.replace('_', ' ')}</span></td>
+                </tr>`;
+            } 
+            // 2. PESANAN SELESAI (Masuk Rekap & History)
+            else if(d.status === "SELESAI" && d.selesai) {
+                const tgl = new Date(d.selesai);
+                if(tgl.getMonth() === selectedMonth) {
+                    // Hitung Statistik
+                    const drv = d.driverName || "Tanpa Nama";
+                    if(!stats[drv]) stats[drv] = { antar: 0, jemput: 0 };
+                    if(d.layanan === "ANTAR") stats[drv].antar++;
+                    else stats[drv].jemput++;
+
+                    // Masukkan ke Tabel History
+                    const waktu = tgl.toLocaleDateString('id-ID', {day:'numeric', month:'short'}) + " " + tgl.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                    listHistory.innerHTML += `<tr>
+                        <td><small>${waktu}</small></td>
+                        <td><b>${d.nama}</b><br><span class="badge ${d.layanan === 'ANTAR' ? 'bg-blue' : 'bg-green'}">${d.layanan}</span></td>
+                        <td><small>${drv}</small></td>
+                    </tr>`;
+                }
+            }
+        });
+
+        // Render hasil hitungan statistik ke tabel rekap
+        for(let name in stats) {
+            isiRekap.innerHTML += `<tr>
+                <td><b>${name}</b></td>
+                <td>${stats[name].antar}</td>
+                <td>${stats[name].jemput}</td>
+                <td><b>${stats[name].antar + stats[name].jemput}</b></td>
+            </tr>`;
+        }
+    });
 }
 
-/* LIST DATA DENGAN FORMAT TANGGAL LENGKAP DI HISTORY */
-db.on("value",snap=>{
- let aktif="", history="";
- snap.forEach(d=>{
-  let v=d.val();
-  let tglObj = new Date(v.waktu);
+db.on("value", renderSemua);
 
-  // Format Jam:Menit untuk tab Pesanan Aktif
-  let jamMenit = tglObj.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"});
-
-  // Format Lengkap (Tanggal Jam Bulan Tahun) untuk tab History
-  let formatLengkap = tglObj.toLocaleDateString("id-ID", { day: '2-digit', month: 'long', year: 'numeric' }) + " " + tglObj.toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit' });
-
-  if(v.status==="MENUNGGU"){
-    aktif+=`
-    <tr>
-     <td>${jamMenit}</td>
-     <td>${v.nama}</td>
-     <td>${v.driver}</td>
-     <td>${v.layanan}</td>
-     <td><button class="btn-selesai" onclick="selesai('${d.key}')">SELESAI</button></td>
-    </tr>`;
-  }else{
-    history+=`
-    <tr>
-     <td>${formatLengkap}</td>
-     <td>${v.nama}</td>
-     <td>${v.driver}</td>
-     <td>${v.layanan}</td>
-     <td>SELESAI</td>
-    </tr>`;
-  }
- });
-
- document.getElementById("listAktif").innerHTML=aktif||"<tr><td colspan=5>Kosong</td></tr>";
- document.getElementById("listHistory").innerHTML=history||"<tr><td colspan=5>Belum ada</td></tr>";
-});
-
-/* SELESAI */
-function selesai(id){
- db.child(id).update({status:"SELESAI"});
+function showToast(m){ const b=document.getElementById("toast-box"); const e=document.createElement("div"); e.className="toast"; e.innerText=m; b.appendChild(e); setTimeout(()=>e.remove(),3000); }
+function doLogin(){ const n=document.getElementById("adminName").value; if(n){ localStorage.setItem("admin",n); checkAuth(); } }
+function checkAuth(){ const u=localStorage.getItem("admin"); if(u){ document.getElementById("loginBox").style.display="none"; document.getElementById("app").style.display="block"; document.getElementById("headerBar").style.display="flex"; document.getElementById("dispName").innerText=u; document.getElementById("dispImg").src=`https://ui-avatars.com/api/?name=${u}`; } }
+checkAuth();
+function logout(){ localStorage.clear(); location.reload(); }
+async function pilihKontak(){ if('contacts' in navigator){ try{ const c=await navigator.contacts.select(['name','tel']); if(c.length){ document.getElementById('nama').value=c[0].name[0]; document.getElementById('wa').value=c[0].tel[0].replace(/\D/g,''); } }catch(e){}} }
+function buatOrder(l){
+    const n=document.getElementById('nama').value; let w=document.getElementById('wa').value.replace(/\D/g,'');
+    if(!n||!w) return; if(w.startsWith('0')) w='62'+w.slice(1);
+    db.push({ nama:n, wa:w, layanan:l, status:"MENUNGGU_DRIVER", mulai:firebase.database.ServerValue.TIMESTAMP });
+    document.getElementById('nama').value=""; document.getElementById('wa').value="";
+    showToast("Pesanan Berhasil Dibuat!");
 }
 </script>
 </body>
