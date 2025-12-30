@@ -195,6 +195,11 @@ document.querySelectorAll(".nav-item").forEach(n=>{
  }
 });
 
+const namaEl=document.getElementById("nama");
+const waEl=document.getElementById("wa");
+const driverEl=document.getElementById("driver");
+const form=document.getElementById("form");
+
 /* SIMPAN */
 function simpan(layanan){
  let nama=namaEl.value.trim();
@@ -225,40 +230,29 @@ function simpan(layanan){
  form.reset();
 }
 
-/* AUTO HIDE INFO */
 function autoHideInfo(){
  setTimeout(()=>{
   document.getElementById("info").style.display="none";
  },3000);
 }
 
-/* LIST */
-const namaEl=document.getElementById("nama");
-const waEl=document.getElementById("wa");
-const driverEl=document.getElementById("driver");
-const form=document.getElementById("form");
-
+/* LIST DATA DENGAN FORMAT TANGGAL LENGKAP DI HISTORY */
 db.on("value",snap=>{
  let aktif="", history="";
  snap.forEach(d=>{
   let v=d.val();
-  
-  // Format Jam Menit untuk Pesanan Aktif
-  let jam=new Date(v.waktu).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"});
-  
-  // Format Lengkap untuk History (Tanggal, Jam, Bulan, Tahun)
-  let waktuLengkap=new Date(v.waktu).toLocaleString("id-ID",{
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
+  let tglObj = new Date(v.waktu);
+
+  // Format Jam:Menit untuk tab Pesanan Aktif
+  let jamMenit = tglObj.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"});
+
+  // Format Lengkap (Tanggal Jam Bulan Tahun) untuk tab History
+  let formatLengkap = tglObj.toLocaleDateString("id-ID", { day: '2-digit', month: 'long', year: 'numeric' }) + " " + tglObj.toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit' });
 
   if(v.status==="MENUNGGU"){
     aktif+=`
     <tr>
-     <td>${jam}</td>
+     <td>${jamMenit}</td>
      <td>${v.nama}</td>
      <td>${v.driver}</td>
      <td>${v.layanan}</td>
@@ -267,7 +261,7 @@ db.on("value",snap=>{
   }else{
     history+=`
     <tr>
-     <td>${waktuLengkap}</td>
+     <td>${formatLengkap}</td>
      <td>${v.nama}</td>
      <td>${v.driver}</td>
      <td>${v.layanan}</td>
@@ -276,8 +270,8 @@ db.on("value",snap=>{
   }
  });
 
- listAktif.innerHTML=aktif||"<tr><td colspan=5>Kosong</td></tr>";
- listHistory.innerHTML=history||"<tr><td colspan=5>Belum ada</td></tr>";
+ document.getElementById("listAktif").innerHTML=aktif||"<tr><td colspan=5>Kosong</td></tr>";
+ document.getElementById("listHistory").innerHTML=history||"<tr><td colspan=5>Belum ada</td></tr>";
 });
 
 /* SELESAI */
