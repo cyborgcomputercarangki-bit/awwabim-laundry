@@ -3,326 +3,287 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ADMIN AWWABIM</title>
+<title>ADMIN AWWABIM LAUNDRY</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-
 <style>
-/* --- BASE STYLE --- */
-* { box-sizing: border-box; outline: none; }
-body {
-    margin: 0; padding: 0; 
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #FF9966, #FF5E62);
-    color: #333;
-    min-height: 100vh;
+body{
+ margin:0;
+ font-family:Segoe UI,Arial;
+ background:linear-gradient(135deg,#fceabb,#f8b500);
 }
-.container { max-width: 800px; margin: auto; padding: 15px; padding-top: 80px; }
-
-/* --- HEADER PROFIL (Fixed Top) --- */
-.header-bar {
-    position: fixed; top: 0; left: 0; right: 0;
-    background: #fff; padding: 10px 20px;
-    display: flex; justify-content: space-between; align-items: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    z-index: 100;
-}
-.brand { font-weight: 700; color: #FF5E62; font-size: 18px; }
-.user-profile { display: flex; align-items: center; gap: 10px; }
-.user-name { font-size: 14px; font-weight: 600; text-align: right; }
-.user-role { font-size: 11px; color: #888; display: block; }
-.avatar {
-    width: 40px; height: 40px; border-radius: 50%;
-    border: 2px solid #FF5E62;
+.container{
+ max-width:1000px;
+ margin:auto;
+ background:#fff;
+ padding:15px;
+ border-radius:12px;
 }
 
-/* --- CARD STYLE --- */
-.card {
-    background: #fff; border-radius: 16px; padding: 20px;
-    margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-h3 { margin-top: 0; margin-bottom: 15px; color: #444; font-size: 1.1rem; }
-
-/* --- INPUTS --- */
-input {
-    width: 100%; padding: 15px; font-size: 16px;
-    border-radius: 12px; border: 2px solid #eee; margin-bottom: 15px;
-    background: #fafafa; transition: 0.3s;
-}
-input:focus { border-color: #FF5E62; background: #fff; }
-
-/* --- BUTTONS --- */
-.btn {
-    width: 100%; padding: 15px; font-size: 16px;
-    border: none; border-radius: 12px;
-    color: #fff; font-weight: 600; cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-.btn:active { transform: scale(0.98); }
-.btn-group { display: flex; gap: 10px; margin-top: 10px; }
-.antar { background: #3498db; }
-.jemput { background: #27ae60; }
-.logout { background: #e74c3c; margin-top: 20px; }
-.pilih-kontak { 
-    background: #2980b9; /* Biru yang menarik perhatian */
-    padding: 10px; margin-bottom: 15px;
-    font-size: 14px;
+/* HEADER */
+.header{
+ text-align:center;
+ font-size:1.3em;
+ font-weight:bold;
+ color:#2c3e50;
+ margin-bottom:10px;
 }
 
-/* --- TABLE (RESPONSIVE FIX) --- */
-table {
-    width: 100%; 
-    border-collapse: collapse; 
-    table-layout: fixed;
+/* NAV */
+.main-nav{
+ display:flex;
+ gap:10px;
+ overflow-x:auto;
+ margin-bottom:10px;
 }
-th, td {
-    padding: 10px 5px; 
-    text-align: left; 
-    border-bottom: 1px solid #eee; 
-    font-size: 13px;
-    vertical-align: top;
-    word-wrap: break-word;
+.nav-item{
+ padding:8px 12px;
+ font-weight:bold;
+ color:#555;
+ text-decoration:none;
 }
-th { background: #f8f9fa; color: #555; font-weight: 600; }
-.col-nama { width: 35%; }
-.col-layanan { width: 30%; }
-.col-status { width: 35%; }
-
-/* --- STATUS BADGES --- */
-.badge {
-    padding: 4px 8px; border-radius: 6px;
-    font-size: 10px; font-weight: bold; color: #fff; display: inline-block; margin-bottom: 2px;
+.nav-item.active{
+ color:#e67e22;
+ border-bottom:3px solid #e67e22;
 }
-.MENUNGGU_DRIVER { background: #f1c40f; color: #fff; }
-.SEDANG_DIANTAR { background: #3498db; }
-.SEDANG_DIJEMPUT { background: #27ae60; }
-.SELESAI { background: #95a5a6; }
 
-.driver-info { font-size: 10px; color: #555; font-style: italic; display: block; }
+.tab-content{display:none}
+.tab-content.active{display:block}
 
-/* --- TOAST --- */
-#toast-box { position: fixed; top: 80px; right: 20px; z-index: 9999; }
-.toast {
-    background: #333; color: #fff; padding: 10px 20px;
-    border-radius: 8px; margin-bottom: 10px; font-size: 13px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    animation: slideIn 0.3s, fadeOut 0.5s 2.5s forwards;
+/* FORM */
+form{display:flex;flex-direction:column;gap:10px}
+input{
+ padding:10px;
+ border-radius:6px;
+ border:1px solid #ccc;
 }
-@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-@keyframes fadeOut { to { opacity: 0; } }
 
-/* Login Box Adjustment */
-#loginBox { margin-top: 50px; }
+.btn-group{display:flex;gap:10px}
+.btn{
+ flex:1;
+ padding:12px;
+ border:none;
+ color:#fff;
+ font-weight:bold;
+ border-radius:6px;
+}
+.btn-jemput{background:#27ae60}
+.btn-antar{background:#3498db}
+
+/* STATUS BAR */
+.info-status{
+ display:none;
+ margin-top:8px;
+ padding:10px;
+ border-radius:6px;
+ font-weight:bold;
+ text-align:center;
+}
+.info-jemput{
+ background:#e9f7ef;
+ color:#27ae60;
+ border:1px solid #27ae60;
+}
+.info-antar{
+ background:#eaf2fb;
+ color:#3498db;
+ border:1px solid #3498db;
+}
+
+/* TABLE */
+.table-wrapper{width:100%;overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{
+ padding:8px;
+ border-bottom:1px solid #eee;
+ font-size:.9em;
+}
+th{background:#2c3e50;color:#fff}
+
+.btn-selesai{
+ background:#27ae60;
+ color:#fff;
+ border:none;
+ padding:6px 10px;
+ border-radius:4px;
+}
+
+@media(max-width:600px){
+ .btn-group{flex-direction:column}
+}
 </style>
 </head>
 
 <body>
-<div id="toast-box"></div> 
-
-<div id="headerBar" class="header-bar" style="display:none">
-    <div class="brand">ADMIN AWWABIM</div>
-    <div class="user-profile">
-        <div>
-            <div class="user-name" id="dispName">Admin</div>
-            <span class="user-role">Administrator</span>
-        </div>
-        <img id="dispImg" src="" class="avatar" alt="User">
-    </div>
-</div>
-
 <div class="container">
 
-    <div class="card" id="loginBox">
-        <h3>🔐 Login Admin</h3>
-        <input id="adminName" placeholder="Masukkan Nama Admin" autocomplete="off">
-        <button class="btn jemput" onclick="doLogin()">MASUK DASHBOARD</button>
-    </div>
+<div class="header">ADMIN AWWABIM LAUNDRY</div>
 
-    <div id="app" style="display:none">
-        
-        <div class="card">
-            <h3>📝 Order Baru</h3>
-            <input id="nama" placeholder="Nama Pelanggan" autocomplete="off">
-            <input id="wa" placeholder="WhatsApp (cth: 0812xxx)" type="tel" inputmode="numeric" autocomplete="tel"> 
-            
-            <button class="btn pilih-kontak" onclick="pilihKontak()">
-                📞 PILIH NOMOR DARI KONTAK HP
-            </button>
-            
-            <div class="btn-group">
-                <button class="btn antar" onclick="buatOrder('ANTAR')">🛵 ANTAR</button>
-                <button class="btn jemput" onclick="buatOrder('JEMPUT')">🧺 JEMPUT</button>
-            </div>
-        </div>
+<nav class="main-nav">
+ <a href="#" class="nav-item active" data-tab="input">Order Baru</a>
+ <a href="#" class="nav-item" data-tab="aktif">Pesanan Aktif</a>
+ <a href="#" class="nav-item" data-tab="history">History</a>
+</nav>
 
-        <div class="card">
-            <h3>🔥 Pesanan Berjalan</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th class="col-nama">Nama</th>
-                        <th class="col-layanan">Layanan</th>
-                        <th class="col-status">Status</th>
-                    </tr>
-                </thead>
-                <tbody id="listAktif"></tbody>
-            </table>
-        </div>
+<div id="input" class="tab-content active">
+<form id="form">
+ <input id="nama" placeholder="Nama pelanggan">
+ <input id="wa" placeholder="WhatsApp (08xxx)">
+ <input id="driver" placeholder="Nama driver">
+ <div class="btn-group">
+  <button type="button" class="btn btn-jemput" onclick="simpan('JEMPUT')">🧺 JEMPUT</button>
+  <button type="button" class="btn btn-antar" onclick="simpan('ANTAR')">🚚 ANTAR</button>
+ </div>
+ <div id="info" class="info-status"></div>
+</form>
+</div>
 
-        <div class="card">
-            <h3>📜 Riwayat Selesai</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th class="col-nama">Nama</th>
-                        <th class="col-layanan">Info</th>
-                        <th class="col-status">Waktu</th>
-                    </tr>
-                </thead>
-                <tbody id="listHistory"></tbody>
-            </table>
-        </div>
+<div id="aktif" class="tab-content">
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+ <th>Waktu</th>
+ <th>Pelanggan</th>
+ <th>Driver</th>
+ <th>Layanan</th>
+ <th>Aksi</th>
+</tr>
+</thead>
+<tbody id="listAktif"></tbody>
+</table>
+</div>
+</div>
 
-        <button class="btn logout" onclick="logout()">KELUAR</button>
-    </div>
+<div id="history" class="tab-content">
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+ <th>Waktu & Tanggal</th>
+ <th>Pelanggan</th>
+ <th>Driver</th>
+ <th>Layanan</th>
+ <th>Status</th>
+</tr>
+</thead>
+<tbody id="listHistory"></tbody>
+</table>
+</div>
+</div>
 
 </div>
 
 <script>
-// --- FIREBASE ---
-const firebaseConfig = {
-    apiKey: "AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
-    databaseURL: "https://awwabim-laundry-default-rtdb.firebaseio.com"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database().ref("Pesanan");
-
-// --- DOM ELEMENTS ---
-const loginBox = document.getElementById("loginBox");
-const app = document.getElementById("app");
-const headerBar = document.getElementById("headerBar");
-const dispName = document.getElementById("dispName");
-const dispImg = document.getElementById("dispImg");
-
-const inpNama = document.getElementById("nama");
-const inpWa = document.getElementById("wa");
-const tAktif = document.getElementById("listAktif");
-const tHistory = document.getElementById("listHistory");
-
-// --- TOAST ---
-function showToast(msg, color="#27ae60"){
-    const box = document.getElementById("toast-box");
-    const el = document.createElement("div");
-    el.className = "toast";
-    el.innerText = msg;
-    el.style.background = color;
-    box.appendChild(el);
-    setTimeout(()=> el.remove(), 3000);
-}
-
-// --- LOGIN/PROFILE ---
-function doLogin(){
-    const n = document.getElementById("adminName").value.trim();
-    if(!n) return showToast("Nama admin wajib diisi!", "#e74c3c");
-    localStorage.setItem("admin", n);
-    checkAuth();
-}
-
-function checkAuth(){
-    const user = localStorage.getItem("admin");
-    if(user){
-        loginBox.style.display = "none";
-        app.style.display = "block";
-        headerBar.style.display = "flex";
-        
-        // Set Profile Header
-        dispName.innerText = user;
-        dispImg.src = `https://ui-avatars.com/api/?name=${user}&background=random&color=fff`;
-    }
-}
-checkAuth(); 
-
-function logout(){
-    localStorage.clear();
-    location.reload();
-}
-
-// --- ORDER LOGIC ---
-function pilihKontak(){
-    // **********************************************
-    // INI ADALAH TRIK UNTUK MEMICU DIALOG KONTAK HP
-    // **********************************************
-    
-    // 1. Fokuskan input ke kolom WA. Di sebagian besar HP, ini akan memicu keyboard.
-    inpWa.focus();
-
-    // 2. Kemudian, panggil URI skema tel: melalui window.location 
-    //    untuk meminta OS/Browser menampilkan dialog kontak.
-    //    Ini hanya berfungsi jika user sudah berinteraksi dengan halaman.
-    window.location.href = 'tel:'; 
-    
-    showToast("Pilih nomor dari daftar kontak yang muncul!", "#2980b9");
-}
-
-function buatOrder(layanan){
-    const nama = inpNama.value.trim();
-    let wa = inpWa.value.replace(/\D/g,'');
-    
-    if(!nama || !wa) return showToast("Lengkapi data dulu!", "#e74c3c");
-    if(wa.startsWith("0")) wa = "62" + wa.slice(1);
-
-    db.push({
-        nama: nama,
-        wa: wa,
-        layanan: layanan,
-        status: "MENUNGGU_DRIVER",
-        driverName: "",
-        mulai: firebase.database.ServerValue.TIMESTAMP
-    });
-
-    inpNama.value = "";
-    inpWa.value = "";
-    showToast(`Order ${layanan} diteruskan!`, "#2980b9");
-}
-
-// --- REALTIME LISTENER ---
-db.on("value", snap => {
-    tAktif.innerHTML = "";
-    tHistory.innerHTML = "";
-
-    const dataArray = [];
-    snap.forEach(child => {
-        dataArray.push(child.val());
-    });
-    dataArray.reverse();
-
-    dataArray.forEach(d => {
-        const drv = d.driverName ? `<span class="driver-info">Driver: ${d.driverName}</span>` : "";
-
-        if(d.status === "SELESAI"){
-            const waktuSelesai = d.selesai ? new Date(d.selesai).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "-";
-            tHistory.innerHTML += `
-                <tr>
-                    <td>${d.nama}</td>
-                    <td><b>${d.layanan}</b><br>${drv}</td>
-                    <td>${waktuSelesai}</td>
-                </tr>`;
-        } else {
-            tAktif.innerHTML += `
-                <tr>
-                    <td>${d.nama}</td>
-                    <td><b>${d.layanan}</b></td>
-                    <td>
-                        <span class="badge ${d.status}">${d.status.replace("_"," ")}</span>
-                        ${drv}
-                    </td>
-                </tr>`;
-        }
-    });
+/* FIREBASE */
+firebase.initializeApp({
+ apiKey:"AIzaSyA-1GyDIS77tlL0vpiZS_ZLvx1S71TnkQU",
+ databaseURL:"https://awwabim-laundry-default-rtdb.firebaseio.com/"
 });
+const db=firebase.database().ref("pesanan");
+
+/* NAV */
+document.querySelectorAll(".nav-item").forEach(n=>{
+ n.onclick=e=>{
+  e.preventDefault();
+  document.querySelectorAll(".nav-item").forEach(x=>x.classList.remove("active"));
+  n.classList.add("active");
+  document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
+  document.getElementById(n.dataset.tab).classList.add("active");
+ }
+});
+
+/* SIMPAN */
+function simpan(layanan){
+ let nama=namaEl.value.trim();
+ let wa=waEl.value.trim();
+ let driver=driverEl.value.trim();
+ let info=document.getElementById("info");
+
+ if(!nama||!wa||!driver){
+  info.style.display="block";
+  info.className="info-status";
+  info.innerText="Semua field wajib diisi";
+  autoHideInfo();
+  return;
+ }
+
+ if(wa.startsWith("0")) wa="62"+wa.slice(1);
+
+ db.push({
+  nama,wa,driver,layanan,
+  status:"MENUNGGU",
+  waktu:Date.now()
+ });
+
+ info.style.display="block";
+ info.className="info-status "+(layanan==="JEMPUT"?"info-jemput":"info-antar");
+ info.innerText=`Pesanan ${layanan} berhasil disimpan`;
+ autoHideInfo();
+ form.reset();
+}
+
+/* AUTO HIDE INFO */
+function autoHideInfo(){
+ setTimeout(()=>{
+  document.getElementById("info").style.display="none";
+ },3000);
+}
+
+/* LIST */
+const namaEl=document.getElementById("nama");
+const waEl=document.getElementById("wa");
+const driverEl=document.getElementById("driver");
+const form=document.getElementById("form");
+
+db.on("value",snap=>{
+ let aktif="", history="";
+ snap.forEach(d=>{
+  let v=d.val();
+  
+  // Format Jam Menit untuk Pesanan Aktif
+  let jam=new Date(v.waktu).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"});
+  
+  // Format Lengkap untuk History (Tanggal, Jam, Bulan, Tahun)
+  let waktuLengkap=new Date(v.waktu).toLocaleString("id-ID",{
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+
+  if(v.status==="MENUNGGU"){
+    aktif+=`
+    <tr>
+     <td>${jam}</td>
+     <td>${v.nama}</td>
+     <td>${v.driver}</td>
+     <td>${v.layanan}</td>
+     <td><button class="btn-selesai" onclick="selesai('${d.key}')">SELESAI</button></td>
+    </tr>`;
+  }else{
+    history+=`
+    <tr>
+     <td>${waktuLengkap}</td>
+     <td>${v.nama}</td>
+     <td>${v.driver}</td>
+     <td>${v.layanan}</td>
+     <td>SELESAI</td>
+    </tr>`;
+  }
+ });
+
+ listAktif.innerHTML=aktif||"<tr><td colspan=5>Kosong</td></tr>";
+ listHistory.innerHTML=history||"<tr><td colspan=5>Belum ada</td></tr>";
+});
+
+/* SELESAI */
+function selesai(id){
+ db.child(id).update({status:"SELESAI"});
+}
 </script>
 </body>
 </html>
